@@ -1,8 +1,8 @@
 <?php
 
-namespace Oro\Bundle\AkeneoBundle\ImportExport\DataConverter;
+namespace Creativestyle\Bundle\AkeneoBundle\ImportExport\DataConverter;
 
-use Oro\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
+use Creativestyle\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\PricingBundle\Entity\PriceList;
 use Oro\Bundle\PricingBundle\ImportExport\DataConverter\ProductPriceDataConverter as BaseProductPriceDataConverter;

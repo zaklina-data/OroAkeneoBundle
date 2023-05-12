@@ -418,7 +418,7 @@ services:
       - '@oro_config.manager'
 
   oro_akeneo.importexport.event_listener.import_sluggable_entity:
-    class: 'Oro\Bundle\AkeneoBundle\ImportExport\EventListener\ImportSluggableEntityListener'
+    class: 'Creativestyle\Bundle\AkeneoBundle\ImportExport\EventListener\ImportSluggableEntityListener'
     parent: oro_redirect.event_listener.import_sluggable_entity
     decorates: oro_redirect.event_listener.import_sluggable_entity
     calls:

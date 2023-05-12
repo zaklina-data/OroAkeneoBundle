@@ -1,5 +1,11 @@
 # Akeneo PIM OroCommerce Connector
 
+## New maintainer
+
+We would like to inform you about the recent transfer of repository maintenance responsibility from OroInc to Creativestyle. This transition aims to enhance the development and support of OroInc projects, providing a seamless experience for users and contributors. 
+
+* Starting from version 5.1, a new namespace and package name will be introduced as part of the changes. 
+
 ## Short overview
 This extension allows you to connect [OroCommerce Enterprise](https://oroinc.com/b2b-ecommerce/) with [Akeneo PIM Enterprise](https://www.akeneo.com/) and use the latter’s rich capabilities for product information management with your OroCommerce-powered web store. Combine personalized B2B buying experience with compelling product experience to maximize your content marketing ROI and stay ahead of the B2B eCommerce game.
 
@@ -16,14 +22,14 @@ With this extension, you will be able to sync the following data from Akeneo to 
 
 ## Compatibility
 
-| Connector | Status | OroCommerce |    Akeneo      |
+| Connector | Status | OroCommerce | Akeneo         |
 |-----------|--------|-------------|----------------|
 |    1.6    |  EOL   |     1.6     | 2.3, 3.2, 4.0* |
 |    3.1    |  EOL   |     3.1     | 2.3, 3.2, 4.0* |
 |    4.1    |  EOL   |     4.1     | 2.3, 3.2, 4.0* |
 |    4.2    |  EOL   |     4.2     | 3.2, 4.0, 5.0  |
 |    5.0    |  2023  |     5.0     | 5.0+           |
-|    5.1    |  2024  |     5.1     | 5.0+           |
+|    5.1    |  2024  |     5.1     | 5.1+           |
 
 ** Akeneo supported using older client versions, new features are not available.**
 
@@ -31,8 +37,16 @@ With this extension, you will be able to sync the following data from Akeneo to 
 
 1. Add composer package
 
+version <= 5.0
+
 ```
 composer require "oro/commerce-akeneo:5.0.*"
+```
+
+version >= 5.1
+
+```
+composer require "creativestyle/commerce-akeneo:5.1.*"
 ```
 
 2. Follow [Setup Guide](https://doc.oroinc.com/backend/setup/upgrade-to-new-version)

@@ -116,7 +116,7 @@ Create a new integration to start synchronizing data from Akeneo to OroCommerce.
 
       If some data of the selected channel has been changed after the initial synchronization, click "Refresh Channels" to reset the current configuration and retrieve the newly updated data from Akeneo.
 
-   * Sync Products - The setting that defines which product type you want to synchronize. By default, we sync all products, bu you can choose to sync only the published ones by selecting the corresponding option.
+   * Sync Products - The setting that defines which product type you want to synchronize. By default, we sync all products, but you can choose to sync only the published ones by selecting the corresponding option.
    * Product Unit Attribute Name - Text attribute from Akeneo which contains product unit name.
    * Product Unit Precision Attribute Name - Numeric attribute from Akeneo which contains unit precision.
    * Currency - The currency options retrieved from Akeneo. If some currency is unavailable in OroCommerce, it will not be imported. Select one or several currencies for your products from the list. In case of no currency selected, the corresponding error message pops up that will require you to choose at least one currency.

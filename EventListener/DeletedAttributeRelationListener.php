@@ -2,7 +2,6 @@
 
 namespace Creativestyle\Bundle\AkeneoBundle\EventListener;
 
-use Doctrine\Inflector\Inflector;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeGroupRelation;
 use Oro\Bundle\EntityConfigBundle\EventListener\DeletedAttributeRelationListener as BaseListener;
@@ -13,33 +12,28 @@ use Oro\Component\MessageQueue\Client\MessageProducerInterface;
 
 class DeletedAttributeRelationListener extends BaseListener
 {
-    /** @var array */
-    protected $deletedAttributesNames = [];
-
-    /** @var Inflector */
-    private $inflector;
+    protected array $deletedAttributesNames = [];
 
     public function __construct(
         MessageProducerInterface $messageProducer,
-        DeletedAttributeProviderInterface $deletedAttributeProvider,
-        Inflector $inflector
+        DeletedAttributeProviderInterface $deletedAttributeProvider
     ) {
-        parent::__construct($messageProducer, $deletedAttributeProvider, $inflector);
-
-        $this->inflector = $inflector;
+        parent::__construct($messageProducer, $deletedAttributeProvider);
     }
 
     public function onFlush(OnFlushEventArgs $eventArgs): void
     {
-        $uow = $eventArgs->getEntityManager()->getUnitOfWork();
+        $uow = $eventArgs->getObjectManager()->getUnitOfWork();
 
         foreach ($uow->getScheduledEntityDeletions() as $attributeRelation) {
             if (!$attributeRelation instanceof AttributeGroupRelation) {
                 continue;
             }
-            $attributeFamily = $attributeRelation->getAttributeGroup()->getAttributeFamily();
+            $attributeFamily = $attributeRelation->getAttributeGroup()?->getAttributeFamily();
 
-            if ($this->checkIsDeleted($attributeFamily, $attributeRelation->getEntityConfigFieldId())) {
+            if ($attributeFamily
+                && $this->checkIsDeleted($attributeFamily, $attributeRelation->getEntityConfigFieldId())
+            ) {
                 $this->deletedAttributes[$attributeFamily->getId()][] = $attributeRelation->getEntityConfigFieldId();
             }
         }
@@ -47,12 +41,14 @@ class DeletedAttributeRelationListener extends BaseListener
         foreach ($this->deletedAttributes as $attributeFamilyId => $attributeIds) {
             $attributes = $this->deletedAttributeProvider->getAttributesByIds($attributeIds);
             foreach ($attributes as &$attribute) {
-                $attribute = $this->inflector->camelize($attribute->getFieldName());
+                // @TODO stevensonkuo make sure here we don't need inflector.
+                $attribute = $this->getAttributeName($attribute);
             }
+            unset($attribute);
 
             $this->deletedAttributesNames[$attributeFamilyId] = array_merge(
                 $this->deletedAttributesNames[$attributeFamilyId] ?? [],
-                $attributes
+                    $attributes
             );
             unset($this->deletedAttributes[$attributeFamilyId]);
         }

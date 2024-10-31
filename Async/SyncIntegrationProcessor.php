@@ -2,22 +2,24 @@
 
 namespace Creativestyle\Bundle\AkeneoBundle\Async;
 
+use Creativestyle\Bundle\AkeneoBundle\Integration\AkeneoChannel;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
-use Creativestyle\Bundle\AkeneoBundle\Integration\AkeneoChannel;
+use Doctrine\Persistence\ObjectRepository;
 use Oro\Bundle\IntegrationBundle\Async\Topic\SyncIntegrationTopic;
 use Oro\Bundle\IntegrationBundle\Authentication\Token\IntegrationTokenAwareTrait;
 use Oro\Bundle\IntegrationBundle\Entity\Channel as Integration;
 use Oro\Bundle\IntegrationBundle\Provider\LoggerStrategyAwareInterface;
 use Oro\Bundle\IntegrationBundle\Provider\SyncProcessorRegistry;
 use Oro\Bundle\MessageQueueBundle\Entity\Job;
+use Oro\Bundle\MessageQueueBundle\Entity\Repository\JobRepository;
 use Oro\Component\MessageQueue\Client\TopicSubscriberInterface;
 use Oro\Component\MessageQueue\Consumption\MessageProcessorInterface;
+use Oro\Component\MessageQueue\Job\Job as MessageJob;
 use Oro\Component\MessageQueue\Job\JobRunner;
 use Oro\Component\MessageQueue\Transport\MessageInterface;
 use Oro\Component\MessageQueue\Transport\SessionInterface;
-use Oro\Component\MessageQueue\Util\JSON;
-use Psr\Log\LoggerAwareTrait;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerAwareTrait;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
@@ -31,75 +33,33 @@ class SyncIntegrationProcessor implements MessageProcessorInterface, ContainerAw
 {
     use ContainerAwareTrait;
     use IntegrationTokenAwareTrait;
-    use LoggerAwareTrait;
-
-    /** @var ManagerRegistry */
-    private $doctrine;
-
-    /** @var SyncProcessorRegistry */
-    private $syncProcessorRegistry;
-
-    /** @var JobRunner */
-    private $jobRunner;
 
     public function __construct(
-        ManagerRegistry $doctrine,
-        TokenStorageInterface $tokenStorage,
-        SyncProcessorRegistry $syncProcessorRegistry,
-        JobRunner $jobRunner
+        private ManagerRegistry $doctrine,
+        private TokenStorageInterface $tokenStorage,
+        private SyncProcessorRegistry $syncProcessorRegistry,
+        private JobRunner $jobRunner,
+        private LoggerInterface $logger
     ) {
-        $this->doctrine = $doctrine;
-        $this->tokenStorage = $tokenStorage;
-        $this->syncProcessorRegistry = $syncProcessorRegistry;
-        $this->jobRunner = $jobRunner;
     }
 
-    public static function getSubscribedTopics()
+    public static function getSubscribedTopics(): array
     {
         return [SyncIntegrationTopic::getName()];
     }
 
-    public function process(MessageInterface $message, SessionInterface $session)
+    public function process(MessageInterface $message, SessionInterface $session): string
     {
-        $body = JSON::decode($message->getBody());
-        $body = array_replace_recursive(
-            [
-                'integration_id' => null,
-                'connector' => null,
-                'connector_parameters' => [],
-                'transport_batch_size' => 100,
-            ],
-            $body
-        );
-
-        if (!$body['integration_id']) {
-            $this->logger->critical('Invalid message: integration_id is empty');
-
-            return self::REJECT;
-        }
+        /** @noinspection DuplicatedCode */
+        $messageBody = $message->getBody();
 
         /** @var EntityManagerInterface $em */
         $em = $this->doctrine->getManager();
 
         /** @var Integration $integration */
-        $integration = $em->find(Integration::class, $body['integration_id']);
-        if (!$integration) {
-            $this->logger->error(sprintf('Integration with id "%s" is not found', $body['integration_id']));
-
-            return self::REJECT;
-        }
-
-        if (!$integration->isEnabled()) {
-            $this->logger->error(sprintf('Integration with id "%s" is not enabled', $body['integration_id']));
-
-            return self::REJECT;
-        }
-
-        $jobName = 'oro_integration:sync_integration:' . $body['integration_id'];
-        $ownerId = $message->getMessageId();
-
-        if (!$ownerId) {
-            $this->logger->critical('Internal error: ownerId is empty');
+        $integration = $em->find(Integration::class, $messageBody['integration_id']);
+        if (!$integration || !$integration->isEnabled()) {
+            $this->logger->critical('Integration should exist and be enabled');
 
             return self::REJECT;
         }
@@ -107,29 +67,44 @@ class SyncIntegrationProcessor implements MessageProcessorInterface, ContainerAw
         $em->getConnection()->getConfiguration()->setSQLLogger(null);
 
         $this->setTemporaryIntegrationToken($integration);
-        $integration->getTransport()->getSettingsBag()->set('page_size', $body['transport_batch_size']);
+        $integration->getTransport()->getSettingsBag()->set('page_size', $messageBody['transport_batch_size']);
+
+        $jobName = $this->jobRunner->getJobNameByMessage($message);
+        $ownerId = $message->getMessageId();
+
+        $rootJob = $this->getJobRepository()->findRootJobByOwnerIdAndJobName($ownerId, $jobName);
+        if (!$rootJob || $rootJob->getStatus() === MessageJob::STATUS_CANCELLED) {
+            return self::REJECT;
+        }
 
         $result = $this->jobRunner->runUnique(
             $ownerId,
             $jobName,
-            function (JobRunner $jobRunner, Job $job) use ($integration, $body) {
+            function (JobRunner $jobRunner, Job $job) use ($integration, $messageBody) {
                 $processor = $this->syncProcessorRegistry->getProcessorForIntegration($integration);
                 if ($processor instanceof LoggerStrategyAwareInterface) {
                     $processor->getLoggerStrategy()->setLogger($this->logger);
                 }
-                $connectorParameters = $body['connector_parameters'];
+                // Customization starts
+                $connectorParameters = $messageBody['connector_parameters'];
                 if ($integration->getType() === AkeneoChannel::TYPE) {
                     $connectorParameters['rootJobId'] = $job->getRootJob()->getId();
                 }
+                // Customization ends
 
                 return $processor->process(
                     $integration,
-                    $body['connector'],
+                    $messageBody['connector'],
                     $connectorParameters
                 );
             }
         );
 
         return $result ? self::ACK : self::REJECT;
+    }
+
+    public function getJobRepository(): ObjectRepository|JobRepository
+    {
+        return $this->doctrine->getManagerForClass(Job::class)->getRepository(Job::class);
     }
 }

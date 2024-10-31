@@ -1,111 +1,111 @@
 oro:
-  akeneo:
-    integration:
-      refresh:
-        channels: 'Refresh Channels'
-        currencies: 'Refresh Currency'
-        locales: 'Refresh Locales'
-      channel.label: 'Akeneo'
-      settings:
-        label: 'Akeneo Transport'
-        url:
-          label: 'Akeneo URL'
-          tooltip: 'Akeneo URL https://api.akeneo.com/'
-        clientId.label: 'User ClienId'
-        secret.label: 'User Secret'
-        password.label: 'User Credential Password'
-        currencies.label: 'Currencies'
-        locales.error: 'Warning: You have 2 or more of the same Akeneo locales selected'
-        orolocales.error: 'Error! Its not possible to map more then 1 Akeneo locale to 1 Oro locale'
-        locales.success: 'You used all the Akeneo locales, please add a locale to the Akeneo platform first to be able to add another locale'
-        locales.label: 'Locales'
-        locales.add: 'Add'
-        akeneo_channels.label: 'Channel'
-        akeneo_currencies.label: 'Currency'
-        akeneo_channels.placeholder: 'Choose a channel'
-        root_category.placeholder: 'Select root category'
-        acl_voter_enabled.label: 'ACL voter enabled'
-        sync_products:
-          label: 'Sync Products'
-          published: 'Only Published'
-          all_products: 'All Products'
-        username:
-          label: 'Akeneo Username'
-          tooltip: 'Akeneo Username'
-        password:
-          label: 'Akeneo Password'
-          tooltip: 'Akeneo Password'
-        akeneo_product_filter:
-          label: 'Product Filter'
-          tooltip: 'This field enables you to apply filters to sync only the products you want. As this filter is passed via API request, it must be filled in JSON format. Details on the format and filter options available for the products can be found in the <a target="_blank" href="https://api.akeneo.com/documentation/filter.html#filters">Filters section of the Akeneo PIM documentation</a>'
-        akeneo_configurable_product_filter:
-          label: 'Configurable Product Filter'
-          tooltip: 'This field enables you to apply filters to sync only the configurable products you want. As this filter is passed via API request, it must be filled in JSON format. Details on the format and filter options available for the products can be found in the <a target="_blank" href="https://api.akeneo.com/documentation/filter.html#filters">Filters section of the Akeneo PIM documentation</a>'
-        akeneo_attribute_list:
-          label: 'Attribute Filter'
-          tooltip: 'This field enables you to apply filters to sync only the attributes you want. Values must be attribute code, separated with a semi-colon. IMPORTANT: if not defined before to save the integration, all attributes will be imported.'
-        akeneo_attribute_image_list:
-          label: 'Image Attribute Filter'
-          tooltip: 'List of Akeneo image attributes to use as product images. Values must be attribute code, separated with a semi-colon.'
-        price_list:
-          label: 'Price List'
-        merge_image:
-          label: 'Merge images from simple products to configurable product'
-          tooltip: 'Add all images from the children to the configurable product'
-        product_unit_attribute:
-          label: 'Product Unit Attribute Name'
-        product_unit_precision_attribute:
-          label: 'Product Unit Precision Attribute Name'
-        variant_levels:
-          label: Multilevel Products
-          tooltip: Enable 1st and/or 2nd level configurable products for two-level family variants
-          both: Enable 1st and 2nd level configurable products
-          first_only: Enable 1st level configurable products
-          second_only: Enable 2st level configurable products
-        akeneo_attributes_mapping:
-          label: Attributes Mapping
-          tooltip: 'Additional mapping of Akeneo attributes to OroCommerce attributes. A single value must be separated with a colon (akeneo_code:oro_attribute_name). Values must be separated with a semi-colon (custom_sku:sku;name:names).'
-        akeneo_brand_reference_entity_code:
-          label: 'Brand Reference Entity code'
-        akeneo_brand_mapping:
-          label: Brand Attributes Mapping
-          tooltip: 'Mapping of Reference Entity attributes to Brand attributes. A single value must be separated with a colon (label:names). Values must be separated with a semi-colon (label:names;label:titles).'
-      popup:
-        channel: 'This is a list of channels configured for the current Akeneo PIM instance. Select the required channel for product and category import. To refresh the list, click Refresh Channels'
-        currencies: 'The control configures mapping between the currencies enabled in the current Akeneo PIM instance and the currencies enabled in this application. To skip price import for a specific currency, do not add mapping to it. To refresh the list, click Refresh Currencies'
-        locales: 'This control configures mapping between locales enabled in the current Akeneo PIM instance and the locales enabled in this application. To skip import of a specific locale, do not add mapping to it. To refresh the list, click Refresh Locales'
+    akeneo:
+        integration:
+            refresh:
+                channels: 'Refresh Channels'
+                currencies: 'Refresh Currency'
+                locales: 'Refresh Locales'
+            channel.label: 'Akeneo'
+            settings:
+                label: 'Akeneo Transport'
+                url:
+                    label: 'Akeneo URL'
+                    tooltip: 'Akeneo URL https://api.akeneo.com/'
+                clientId.label: 'User ClienId'
+                secret.label: 'User Secret'
+                password.label: 'User Credential Password'
+                currencies.label: 'Currencies'
+                locales.error: 'Warning: You have 2 or more of the same Akeneo locales selected'
+                orolocales.error: 'Error! Its not possible to map more then 1 Akeneo locale to 1 Oro locale'
+                locales.success: 'You used all the Akeneo locales, please add a locale to the Akeneo platform first to be able to add another locale'
+                locales.label: 'Locales'
+                locales.add: 'Add'
+                akeneo_channels.label: 'Channel'
+                akeneo_currencies.label: 'Currency'
+                akeneo_channels.placeholder: 'Choose a channel'
+                root_category.placeholder: 'Select root category'
+                acl_voter_enabled.label: 'ACL voter enabled'
+                sync_products:
+                    label: 'Sync Products'
+                    published: 'Only Published'
+                    all_products: 'All Products'
+                username:
+                    label: 'Akeneo Username'
+                    tooltip: 'Akeneo Username'
+                password:
+                    label: 'Akeneo Password'
+                    tooltip: 'Akeneo Password'
+                akeneo_product_filter:
+                    label: 'Product Filter'
+                    tooltip: 'This field enables you to apply filters to sync only the products you want. As this filter is passed via API request, it must be filled in JSON format. Details on the format and filter options available for the products can be found in the <a target="_blank" href="https://api.akeneo.com/documentation/filter.html#filters">Filters section of the Akeneo PIM documentation</a>'
+                akeneo_configurable_product_filter:
+                    label: 'Configurable Product Filter'
+                    tooltip: 'This field enables you to apply filters to sync only the configurable products you want. As this filter is passed via API request, it must be filled in JSON format. Details on the format and filter options available for the products can be found in the <a target="_blank" href="https://api.akeneo.com/documentation/filter.html#filters">Filters section of the Akeneo PIM documentation</a>'
+                akeneo_attribute_list:
+                    label: 'Attribute Filter'
+                    tooltip: 'This field enables you to apply filters to sync only the attributes you want. Values must be attribute code, separated with a semi-colon. IMPORTANT: if not defined before to save the integration, all attributes will be imported.'
+                akeneo_attribute_image_list:
+                    label: 'Image Attribute Filter'
+                    tooltip: 'List of Akeneo image attributes to use as product images. Values must be attribute code, separated with a semi-colon.'
+                price_list:
+                    label: 'Price List'
+                merge_image:
+                    label: 'Merge images from simple products to configurable product'
+                    tooltip: 'Add all images from the children to the configurable product'
+                product_unit_attribute:
+                    label: 'Product Unit Attribute Name'
+                product_unit_precision_attribute:
+                    label: 'Product Unit Precision Attribute Name'
+                variant_levels:
+                    label: Multilevel Products
+                    tooltip: Enable 1st and/or 2nd level configurable products for two-level family variants
+                    both: Enable 1st and 2nd level configurable products
+                    first_only: Enable 1st level configurable products
+                    second_only: Enable 2st level configurable products
+                akeneo_attributes_mapping:
+                    label: Attributes Mapping
+                    tooltip: 'Additional mapping of Akeneo attributes to OroCommerce attributes. A single value must be separated with a colon (akeneo_code:oro_attribute_name). Values must be separated with a semi-colon (custom_sku:sku;name:names).'
+                akeneo_brand_reference_entity_code:
+                    label: 'Brand Reference Entity code'
+                akeneo_brand_mapping:
+                    label: Brand Attributes Mapping
+                    tooltip: 'Mapping of Reference Entity attributes to Brand attributes. A single value must be separated with a colon (label:names). Values must be separated with a semi-colon (label:names;label:titles).'
+            popup:
+                channel: 'This is a list of channels configured for the current Akeneo PIM instance. Select the required channel for product and category import. To refresh the list, click Refresh Channels'
+                currencies: 'The control configures mapping between the currencies enabled in the current Akeneo PIM instance and the currencies enabled in this application. To skip price import for a specific currency, do not add mapping to it. To refresh the list, click Refresh Currencies'
+                locales: 'This control configures mapping between locales enabled in the current Akeneo PIM instance and the locales enabled in this application. To skip import of a specific locale, do not add mapping to it. To refresh the list, click Refresh Locales'
 
-    connection_sync:
-      button.text: Sync Akeneo
-    connection_validation:
-      button.text: Check Akeneo Connection
-    connection:
-      successfull: 'Connection successfully established'
-      error: 'Error connecting to Akeneo API'
-    connector:
-      category:
-        label: Category connector
-      product:
-        label: Product connector
-      configurable_product:
-        label: Product Variants connector
-      attribute_family:
-        label: Attribute family connector
-      attribute:
-        label: Attribute connector
-      brand:
-        label: Brand connector
-    entity_config_field:
-      channel:
-        label: Channel
-      akeneo_code:
-        label: Akeneo code
-    attribute_family:
-      channel:
-        label: Channel
-    category:
-      channel:
-        label: Channel
-      akeneo_code:
-        label: Akeneo code
-    error: "Error found: %error%; Akeneo record: %item%"
+        connection_sync:
+            button.text: Sync Akeneo
+        connection_validation:
+            button.text: Check Akeneo Connection
+        connection:
+            successful: 'Connection successfully established'
+            error: 'Error connecting to Akeneo API'
+        connector:
+            category:
+                label: Category connector
+            product:
+                label: Product connector
+            configurable_product:
+                label: Product Variants connector
+            attribute_family:
+                label: Attribute family connector
+            attribute:
+                label: Attribute connector
+            brand:
+                label: Brand connector
+        entity_config_field:
+            channel:
+                label: Channel
+            akeneo_code:
+                label: Akeneo code
+        attribute_family:
+            channel:
+                label: Channel
+        category:
+            channel:
+                label: Channel
+            akeneo_code:
+                label: Akeneo code
+        error: "Error found: %error%; Akeneo record: %item%"

@@ -17,7 +17,7 @@ framework:
                 scope: '^(https:\/\/)([\w]+)(\.cloud\.akeneo\.com)'
                 max_duration: 172800
                 timeout: 172800
-                retry_failed: 
+                retry_failed:
                     max_retries: 2
                     delay: 1000
                     multiplier: 3

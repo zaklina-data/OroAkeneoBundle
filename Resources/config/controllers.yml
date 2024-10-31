@@ -8,6 +8,6 @@ services:
             - '@translator'
             - '@oro_akeneo.integration.transport'
         calls:
-            - [setContainer, ['@Psr\Container\ContainerInterface']]
+            - [ setContainer, [ '@Psr\Container\ContainerInterface' ] ]
         tags:
             - { name: container.service_subscriber }

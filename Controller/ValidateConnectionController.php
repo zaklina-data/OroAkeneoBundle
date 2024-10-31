@@ -9,6 +9,8 @@ use Oro\Bundle\CurrencyBundle\Provider\CurrencyProviderInterface;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\Form\Type\ChannelType;
 use Oro\Bundle\SecurityBundle\Attribute\Acl;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 use Psr\Http\Client\ClientExceptionInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,34 +21,23 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ValidateConnectionController extends AbstractController
 {
-    const CONNECTION_SUCCESSFUL_MESSAGE = 'oro.akeneo.connection.successfull';
-    const CONNECTION_ERROR_MESSAGE = 'oro.akeneo.connection.error';
-
-    /** @var CurrencyProviderInterface */
-    private $currencyProvider;
-
-    /** @var TranslatorInterface */
-    private $translator;
-
-    /** @var AkeneoTransportInterface */
-    private $akeneoTransport;
+    private const CONNECTION_SUCCESSFUL_MESSAGE = 'oro.akeneo.connection.successful';
+    private const CONNECTION_ERROR_MESSAGE = 'oro.akeneo.connection.error';
 
     public function __construct(
-        CurrencyProviderInterface $currencyProvider,
-        TranslatorInterface $translator,
-        AkeneoTransportInterface $akeneoTransport
+        private CurrencyProviderInterface $currencyProvider,
+        private TranslatorInterface $translator,
+        private AkeneoTransportInterface $akeneoTransport
     ) {
-        $this->currencyProvider = $currencyProvider;
-        $this->translator = $translator;
-        $this->akeneoTransport = $akeneoTransport;
     }
 
     /**
-     * @throws \InvalidArgumentException
+     * @throws ContainerExceptionInterface
+     * @throws NotFoundExceptionInterface
      */
-    #[\Symfony\Component\Routing\Attribute\Route(path: '/validate-akeneo-connection/{channelId}/', name: 'oro_akeneo_validate_connection', methods: ['POST'])]
-    #[ParamConverter('channel', class: 'OroIntegrationBundle:Channel', options: ['id' => 'channelId'])]
-    #[Acl(id: 'oro_integration_channel', type: 'entity', class: 'OroIntegrationBundle:Channel', permission: 'VIEW')]
+    #[Route(path: '/validate-akeneo-connection/{channelId}/', name: 'oro_akeneo_validate_connection', methods: ['POST'])]
+    #[ParamConverter('channel', class: Channel::class, options: ['id' => 'channelId'])]
+    #[Acl(id: 'oro_integration_channel', type: 'entity', class: Channel::class, permission: 'VIEW')]
     public function validateConnectionAction(Request $request, Channel $channel = null): JsonResponse
     {
         if (!$channel) {
@@ -58,14 +49,12 @@ class ValidateConnectionController extends AbstractController
 
         /** @var AkeneoSettings $akeneoSettings */
         $akeneoSettings = $channel->getTransport();
-
-        $channelId = $channel->getTransport()->getId();
-
-        if ($channelId && null == $akeneoSettings->getPassword()) {
+        $channelId = $channel->getTransport()?->getId();
+        if ($channelId && null === $akeneoSettings->getPassword()) {
             $entityManager = $this->container->get('doctrine')->getManagerForClass(AkeneoSettings::class);
             $repository = $entityManager->getRepository(AkeneoSettings::class);
             $akeneoSettingsEntity = $repository->findOneBy(['id' => $channelId]);
-            $akeneoSettings->setPassword($akeneoSettingsEntity->getPassword());
+            $akeneoSettings->setPassword($akeneoSettingsEntity?->getPassword());
         }
 
         $akeneoChannelNames = [];
@@ -91,7 +80,7 @@ class ValidateConnectionController extends AbstractController
                     $akeneoCurrencies = $this->akeneoTransport->getMergedCurrencies();
                     $akeneoLocales = $this->akeneoTransport->getLocales();
             }
-        } catch (ClientExceptionInterface | ExceptionInterface $e) {
+        } catch (ClientExceptionInterface|ExceptionInterface $e) {
             $success = false;
             $message = $e->getMessage();
         } catch (\Exception $e) {

@@ -2,6 +2,7 @@
 
 namespace Creativestyle\Bundle\AkeneoBundle\Async;
 
+use Creativestyle\Bundle\AkeneoBundle\Async\Topic\ImportProductsTopic;
 use Doctrine\ORM\EntityManagerInterface;
 use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
 use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
@@ -16,62 +17,36 @@ use Oro\Component\MessageQueue\Consumption\MessageProcessorInterface;
 use Oro\Component\MessageQueue\Job\JobRunner;
 use Oro\Component\MessageQueue\Transport\MessageInterface;
 use Oro\Component\MessageQueue\Transport\SessionInterface;
-use Oro\Component\MessageQueue\Util\JSON;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-class ImportProductProcessor implements MessageProcessorInterface, TopicSubscriberInterface, MemoryCacheProviderAwareInterface
+class ImportProductProcessor implements
+    MessageProcessorInterface,
+    TopicSubscriberInterface,
+    MemoryCacheProviderAwareInterface
 {
     use IntegrationTokenAwareTrait;
     use MemoryCacheProviderAwareTrait;
 
-    /** @var DoctrineHelper */
-    private $doctrineHelper;
-
-    /** @var JobRunner */
-    private $jobRunner;
-
-    /** @var LoggerInterface */
-    private $logger;
-
-    /** @var SyncProcessorRegistry */
-    private $syncProcessorRegistry;
-
     public function __construct(
-        DoctrineHelper $doctrineHelper,
-        JobRunner $jobRunner,
-        TokenStorageInterface $tokenStorage,
-        LoggerInterface $logger,
-        SyncProcessorRegistry $syncProcessorRegistry
+        private DoctrineHelper $doctrineHelper,
+        private JobRunner $jobRunner,
+        private TokenStorageInterface $tokenStorage,
+        private LoggerInterface $logger,
+        private SyncProcessorRegistry $syncProcessorRegistry
     ) {
-        $this->doctrineHelper = $doctrineHelper;
-        $this->jobRunner = $jobRunner;
-        $this->tokenStorage = $tokenStorage;
-        $this->logger = $logger;
-        $this->syncProcessorRegistry = $syncProcessorRegistry;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public static function getSubscribedTopics()
+    #[\Override]
+    public static function getSubscribedTopics(): array
     {
-        return [\Creativestyle\Bundle\AkeneoBundle\Async\Topic\ImportProductsTopic::getName()];
+        return [ImportProductsTopic::getName()];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function process(MessageInterface $message, SessionInterface $session)
+    #[\Override]
+    public function process(MessageInterface $message, SessionInterface $session): string
     {
-        $body = JSON::decode($message->getBody());
-        $body = array_replace_recursive(['integrationId' => null, 'jobId' => null], $body);
-
-        if (!$body['integrationId']) {
-            $this->logger->critical('The message invalid. It must have integrationId set');
-
-            return self::REJECT;
-        }
+        $body = $message->getBody();
 
         /** @var EntityManagerInterface $em */
         $em = $this->doctrineHelper->getEntityManagerForClass(Integration::class);

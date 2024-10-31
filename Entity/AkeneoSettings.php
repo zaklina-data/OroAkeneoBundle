@@ -2,7 +2,7 @@
 
 namespace Creativestyle\Bundle\AkeneoBundle\Entity;
 
-use DateTime;
+use Creativestyle\Bundle\AkeneoBundle\Entity\Repository\AkeneoSettingsRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -14,7 +14,7 @@ use Symfony\Component\HttpFoundation\ParameterBag;
 /**
  * @SuppressWarnings(PHPMD.TooManyFields)
  */
-#[ORM\Entity(repositoryClass: \Creativestyle\Bundle\AkeneoBundle\Entity\Repository\AkeneoSettingsRepository::class)]
+#[ORM\Entity(repositoryClass: AkeneoSettingsRepository::class)]
 class AkeneoSettings extends Transport
 {
     public const TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY = 'first_only';
@@ -23,186 +23,120 @@ class AkeneoSettings extends Transport
     public const DEFAULT_ATTRIBUTES_MAPPING = 'name:names;description:descriptions;';
     public const DEFAULT_BRAND_MAPPING = 'label:names';
 
-    /**
-     * @var string
-     */
     #[ORM\Column(name: 'akeneo_sync_products', type: 'string', length: 255, nullable: false)]
-    protected $syncProducts;
-    /**
-     * @var string
-     */
+    protected string $syncProducts = '';
+
     #[ORM\Column(name: 'akeneo_product_unit_attribute', type: 'string', length: 255, nullable: true)]
-    protected $productUnitAttribute;
-    /**
-     * @var string
-     */
+    protected ?string $productUnitAttribute = null;
+
     #[ORM\Column(name: 'akeneo_unit_precision_attr', type: 'string', length: 255, nullable: true)]
-    protected $productUnitPrecisionAttribute;
-    /**
-     * @var string[]
-     */
+    protected ?string $productUnitPrecisionAttribute = null;
+
     #[ORM\Column(name: 'akeneo_channels', type: 'array', nullable: true)]
-    protected $akeneoChannels;
-    /**
-     * @var string
-     */
+    protected ?array $akeneoChannels = null;
+
     #[ORM\Column(name: 'akeneo_active_channel', type: 'string', nullable: true)]
-    protected $akeneoActiveChannel;
-    /**
-     * @var string[]
-     */
+    protected ?string $akeneoActiveChannel = null;
+
     #[ORM\Column(name: 'akeneo_currencies', type: 'array', nullable: true)]
-    protected $akeneoCurrencies;
-    /**
-     * @var string[]
-     */
+    protected ?array $akeneoCurrencies = null;
+
     #[ORM\Column(name: 'akeneo_active_currencies', type: 'array', nullable: true)]
-    protected $akeneoActiveCurrencies;
-    /**
-     * @var string[]
-     */
+    protected ?array $akeneoActiveCurrencies = null;
+
     #[ORM\Column(name: 'akeneo_locales_list', type: 'array', nullable: true)]
-    protected $akeneoLocalesList;
-    #[ORM\ManyToOne(targetEntity: \Oro\Bundle\CatalogBundle\Entity\Category::class)]
+    protected ?array $akeneoLocalesList = null;
+
+    #[ORM\ManyToOne(targetEntity: Category::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
-    protected $rootCategory;
-    /**
-     * @var bool
-     */
+    protected ?Category $rootCategory = null;
+
     #[ORM\Column(name: 'akeneo_acl_voter_enabled', type: 'boolean')]
-    protected $aclVoterEnabled = true;
-    /**
-     * @var string
-     */
+    protected bool $aclVoterEnabled = true;
+
     #[ORM\Column(name: 'akeneo_product_filter', type: 'text', nullable: true)]
-    protected $productFilter;
-    /**
-     * @var string
-     */
+    protected ?string $productFilter = null;
+
     #[ORM\Column(name: 'akeneo_conf_product_filter', type: 'text', nullable: true)]
-    protected $configurableProductFilter;
-    /**
-     * @var string
-     */
-    #[ORM\Column(type: 'string', name: 'akeneo_url', length: 100)]
-    private $url;
-    /**
-     * @var string
-     */
-    #[ORM\Column(type: 'string', name: 'akeneo_client_id', length: 100)]
-    private $clientId;
-    /**
-     * @var string
-     */
-    #[ORM\Column(type: 'string', name: 'akeneo_secret', length: 100)]
-    private $secret;
-    /**
-     * @var string
-     */
-    #[ORM\Column(type: 'string', name: 'akeneo_username', length: 200)]
-    private $username;
-    /**
-     * @var string
-     */
-    #[ORM\Column(type: 'string', name: 'akeneo_password', length: 200)]
-    private $password;
-    /**
-     * @var string
-     */
-    #[ORM\Column(type: 'string', name: 'akeneo_token', length: 200)]
-    private $token;
-    /**
-     * @var string
-     */
-    #[ORM\Column(type: 'string', name: 'akeneo_refresh_token', length: 200)]
-    private $refreshToken;
+    protected ?string $configurableProductFilter = null;
 
-    /**
-     * @var string
-     */
-    #[ORM\Column(type: 'datetime', name: 'akeneo_token_expiry_date_time', nullable: true)]
-    private $tokenExpiryDateTime;
+    #[ORM\Column(name: 'akeneo_url', type: 'string', length: 100)]
+    private string $url = '';
 
-    #[ORM\OneToMany(targetEntity: \Creativestyle\Bundle\AkeneoBundle\Entity\AkeneoLocale::class, mappedBy: 'akeneoSettings', cascade: ['persist'], orphanRemoval: true, fetch: 'EAGER')]
-    private $akeneoLocales;
+    #[ORM\Column(name: 'akeneo_client_id', type: 'string', length: 100)]
+    private string $clientId = '';
 
-    /**
-     * @var PriceList
-     */
-    #[ORM\ManyToOne(targetEntity: \Oro\Bundle\PricingBundle\Entity\PriceList::class)]
+    #[ORM\Column(name: 'akeneo_secret', type: 'string', length: 100)]
+    private string $secret = '';
+
+    #[ORM\Column(name: 'akeneo_username', type: 'string', length: 200)]
+    private string $username = '';
+
+    #[ORM\Column(name: 'akeneo_password', type: 'string', length: 200)]
+    private string $password = '';
+    #[ORM\Column(name: 'akeneo_token', type: 'string', length: 200)]
+    private string $token = '';
+
+    #[ORM\Column(name: 'akeneo_refresh_token', type: 'string', length: 200)]
+    private string $refreshToken = '';
+
+    #[ORM\Column(name: 'akeneo_token_expiry_date_time', type: 'datetime', nullable: true)]
+    private ?\DateTime $tokenExpiryDateTime = null;
+
+    #[ORM\OneToMany(
+        mappedBy: 'akeneoSettings',
+        targetEntity: AkeneoLocale::class,
+        cascade: ['persist'],
+        fetch: 'EAGER',
+        orphanRemoval: true)
+    ]
+    private Collection $akeneoLocales;
+
+    #[ORM\ManyToOne(targetEntity: PriceList::class)]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
-    private $priceList;
+    private ?PriceList $priceList = null;
 
-    /**
-     * @var string
-     */
     #[ORM\Column(name: 'akeneo_attributes_list', type: 'text', nullable: true)]
-    private $akeneoAttributesList;
+    private ?string $akeneoAttributesList = null;
 
-    /**
-     * @var string
-     */
     #[ORM\Column(name: 'akeneo_attributes_image_list', type: 'text', nullable: true)]
-    private $akeneoAttributesImageList;
+    private ?string $akeneoAttributesImageList;
 
-    /**
-     * @var boolean
-     */
     #[ORM\Column(name: 'akeneo_merge_image_to_parent', type: 'boolean', options: ['default' => false])]
-    private $akeneoMergeImageToParent = false;
+    private bool $akeneoMergeImageToParent = false;
 
-    /**
-     * @var string
-     */
     #[ORM\Column(name: 'akeneo_variant_levels', type: 'string', length: 255)]
-    private $akeneoVariantLevels;
+    private string $akeneoVariantLevels = '';
 
-    /**
-     * @var string
-     */
     #[ORM\Column(name: 'akeneo_attributes_mapping', type: 'text', nullable: true)]
-    private $akeneoAttributesMapping;
+    private ?string $akeneoAttributesMapping = null;
 
     #[ORM\Column(name: 'akeneo_brand_reference_code', type: 'string', length: 255)]
-    private $akeneoBrandReferenceEntityCode;
+    private string $akeneoBrandReferenceEntityCode = '';
 
     #[ORM\Column(name: 'akeneo_brand_mapping', type: 'text', nullable: true)]
-    private $akeneoBrandMapping;
+    private ?string $akeneoBrandMapping = null;
 
-    /**
-     * @var ParameterBag
-     */
-    private $settings;
+    private ?ParameterBag $settings = null;
 
     public function __construct()
     {
         $this->akeneoLocales = new ArrayCollection();
     }
 
-    /**
-     * @return string
-     */
-    public function getUrl()
+    public function getUrl(): string
     {
         return $this->url;
     }
 
-    /**
-     * @param string $url
-     *
-     * @return AkeneoSettings
-     */
-    public function setUrl($url)
+    public function setUrl(string $url): static
     {
         $this->url = $url;
 
         return $this;
     }
 
-    /**
-     * @return $this
-     */
-    public function addAkeneoLocale(AkeneoLocale $akeneoLocale)
+    public function addAkeneoLocale(AkeneoLocale $akeneoLocale): static
     {
         $this->akeneoLocales[] = $akeneoLocale;
         $akeneoLocale->setAkeneoSettings($this);
@@ -210,10 +144,7 @@ class AkeneoSettings extends Transport
         return $this;
     }
 
-    /**
-     * @return $this
-     */
-    public function removeAkeneoLocale(AkeneoLocale $akeneoLocale)
+    public function removeAkeneoLocale(AkeneoLocale $akeneoLocale): static
     {
         $this->akeneoLocales->removeElement($akeneoLocale);
         $akeneoLocale->setAkeneoSettings(null);
@@ -221,50 +152,31 @@ class AkeneoSettings extends Transport
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getProductFilter()
+    public function getProductFilter(): string
     {
         return $this->productFilter;
     }
 
-    /**
-     * @param string $productFilter
-     *
-     * @return self
-     */
-    public function setProductFilter($productFilter)
+    public function setProductFilter(string $productFilter): static
     {
         $this->productFilter = $productFilter;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getConfigurableProductFilter()
+    public function getConfigurableProductFilter(): ?string
     {
         return $this->configurableProductFilter;
     }
 
-    /**
-     * @param string $configurableProductFilter
-     *
-     * @return self
-     */
-    public function setConfigurableProductFilter($configurableProductFilter)
+    public function setConfigurableProductFilter(string $configurableProductFilter): static
     {
         $this->configurableProductFilter = $configurableProductFilter;
 
         return $this;
     }
 
-    /**
-     * @return ParameterBag
-     */
-    public function getSettingsBag()
+    public function getSettingsBag(): ParameterBag
     {
         if (null === $this->settings) {
             $this->settings = new ParameterBag(
@@ -296,40 +208,24 @@ class AkeneoSettings extends Transport
         return $this->settings;
     }
 
-    /**
-     * @return string
-     */
-    public function getClientId()
+    public function getClientId(): string
     {
         return $this->clientId;
     }
 
-    /**
-     * @param string $clientId
-     *
-     * @return AkeneoSettings
-     */
-    public function setClientId($clientId)
+    public function setClientId(string $clientId): static
     {
         $this->clientId = $clientId;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getSecret()
+    public function getSecret(): string
     {
         return $this->secret;
     }
 
-    /**
-     * @param string $secret
-     *
-     * @return AkeneoSettings
-     */
-    public function setSecret($secret)
+    public function setSecret(string $secret): static
     {
         $this->secret = $secret;
 
@@ -338,20 +234,16 @@ class AkeneoSettings extends Transport
 
     /**
      * Gets akeneoChannels.
-     *
-     * @return array|null
      */
-    public function getAkeneoChannels()
+    public function getAkeneoChannels(): ?array
     {
         return $this->akeneoChannels;
     }
 
     /**
      * Sets akeneoChannels.
-     *
-     * @return self
      */
-    public function setAkeneoChannels(array $akeneoChannels = null)
+    public function setAkeneoChannels(array $akeneoChannels = null): static
     {
         $this->akeneoChannels = $akeneoChannels;
 
@@ -360,168 +252,121 @@ class AkeneoSettings extends Transport
 
     /**
      * Gets akeneoActiveChannel.
-     *
-     * @return string|null
      */
-    public function getAkeneoActiveChannel()
+    public function getAkeneoActiveChannel(): ?string
     {
         return $this->akeneoActiveChannel;
     }
 
     /**
      * Sets akeneoActiveChannel.
-     *
-     * @param string|null $akeneoActiveChannel
-     *
-     * @return self
      */
-    public function setAkeneoActiveChannel($akeneoActiveChannel = null)
+    public function setAkeneoActiveChannel(?string $akeneoActiveChannel = null): static
     {
         $this->akeneoActiveChannel = $akeneoActiveChannel;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getUsername()
+    public function getUsername(): string
     {
         return $this->username;
     }
 
-    /**
-     * @param string $username
-     *
-     * @return AkeneoSettings
-     */
-    public function setUsername($username)
+    public function setUsername($username): static
     {
         $this->username = $username;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getPassword()
+    public function getPassword(): string
     {
         return $this->password;
     }
 
-    /**
-     * @param string $password
-     *
-     * @return AkeneoSettings
-     */
-    public function setPassword($password)
+    public function setPassword(string $password): static
     {
         $this->password = $password;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getToken(): ?string
+    public function getToken(): string
     {
         return $this->token;
     }
 
-    public function setToken(string $token): void
+    public function setToken(string $token): static
     {
         $this->token = $token;
+
+        return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getRefreshToken(): ?string
+    public function getRefreshToken(): string
     {
         return $this->refreshToken;
     }
 
-    public function setRefreshToken(string $refreshToken): void
+    public function setRefreshToken(string $refreshToken): static
     {
         $this->refreshToken = $refreshToken;
+
+        return $this;
     }
 
     /**
      * Get syncProducts.
-     *
-     * @return string
      */
-    public function getSyncProducts()
+    public function getSyncProducts(): string
     {
         return $this->syncProducts;
     }
 
     /**
      * Set syncProducts.
-     *
-     * @param string $syncProducts
-     *
-     * @return AkeneoSettings
      */
-    public function setSyncProducts($syncProducts)
+    public function setSyncProducts(string $syncProducts): static
     {
         $this->syncProducts = $syncProducts;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getProductUnitAttribute()
+    public function getProductUnitAttribute(): ?string
     {
         return $this->productUnitAttribute;
     }
 
-    /**
-     * @param string $productUnitAttribute
-     */
-    public function setProductUnitAttribute($productUnitAttribute)
+    public function setProductUnitAttribute(string $productUnitAttribute): static
     {
         $this->productUnitAttribute = $productUnitAttribute;
 
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getProductUnitPrecisionAttribute()
+    public function getProductUnitPrecisionAttribute(): ?string
     {
         return $this->productUnitPrecisionAttribute;
     }
 
-    /**
-     * @param string $productUnitPrecisionAttribute
-     */
-    public function setProductUnitPrecisionAttribute($productUnitPrecisionAttribute)
+    public function setProductUnitPrecisionAttribute(string $productUnitPrecisionAttribute): static
     {
         $this->productUnitPrecisionAttribute = $productUnitPrecisionAttribute;
 
         return $this;
     }
 
-    /**
-     * @return array|null
-     */
-    public function getAkeneoCurrencies()
+    public function getAkeneoCurrencies(): ?array
     {
         return $this->akeneoCurrencies;
     }
 
     /**
      * Sets akeneoCurrencies.
-     *
-     * @return self
      */
-    public function setAkeneoCurrencies(array $akeneoCurrencies = null)
+    public function setAkeneoCurrencies(array $akeneoCurrencies = null): static
     {
         $this->akeneoCurrencies = $akeneoCurrencies;
 
@@ -530,20 +375,16 @@ class AkeneoSettings extends Transport
 
     /**
      * Gets akeneoActiveCurrencies.
-     *
-     * @return array|null
      */
-    public function getAkeneoActiveCurrencies()
+    public function getAkeneoActiveCurrencies(): ?array
     {
         return $this->akeneoActiveCurrencies;
     }
 
     /**
      * Sets akeneoActiveCurrencies.
-     *
-     * @return self
      */
-    public function setAkeneoActiveCurrencies(array $akeneoActiveCurrencies = null)
+    public function setAkeneoActiveCurrencies(array $akeneoActiveCurrencies = null): static
     {
         $this->akeneoActiveCurrencies = $akeneoActiveCurrencies;
 
@@ -553,27 +394,23 @@ class AkeneoSettings extends Transport
     /**
      * @return Collection|AkeneoLocale[]
      */
-    public function getAkeneoLocales()
+    public function getAkeneoLocales(): Collection
     {
         return $this->akeneoLocales;
     }
 
     /**
      * Gets akeneoLocalesList.
-     *
-     * @return array|null
      */
-    public function getAkeneoLocalesList()
+    public function getAkeneoLocalesList(): ?array
     {
         return $this->akeneoLocalesList;
     }
 
     /**
      * Sets akeneoLocalesList.
-     *
-     * @return self
      */
-    public function setAkeneoLocalesList(array $akeneoLocalesList = null)
+    public function setAkeneoLocalesList(array $akeneoLocalesList = null): static
     {
         $this->akeneoLocalesList = $akeneoLocalesList;
 
@@ -585,9 +422,6 @@ class AkeneoSettings extends Transport
         return $this->akeneoAttributesImageList;
     }
 
-    /**
-     * @param string $akeneoAttributesImageList
-     */
     public function setAkeneoAttributesImageList(string $akeneoAttributesImageList = null): self
     {
         $this->akeneoAttributesImageList = $akeneoAttributesImageList;
@@ -595,10 +429,7 @@ class AkeneoSettings extends Transport
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getTokenExpiryDateTime()
+    public function getTokenExpiryDateTime(): ?\Datetime
     {
         return $this->tokenExpiryDateTime;
     }
@@ -612,22 +443,16 @@ class AkeneoSettings extends Transport
 
     /**
      * Get root category.
-     *
-     * @return Category|null
      */
-    public function getRootCategory()
+    public function getRootCategory(): ?Category
     {
         return $this->rootCategory;
     }
 
     /**
      * Set root category.
-     *
-     * @param mixed $rootCategory
-     *
-     * @return AkeneoSettings
      */
-    public function setRootCategory(Category $rootCategory = null)
+    public function setRootCategory(Category $rootCategory = null): self
     {
         $this->rootCategory = $rootCategory;
 
@@ -636,10 +461,8 @@ class AkeneoSettings extends Transport
 
     /**
      * Get mapped locale.
-     *
-     * @return null|string
      */
-    public function getMappedAkeneoLocale(string $locale)
+    public function getMappedAkeneoLocale(string $locale): ?string
     {
         foreach ($this->getAkeneoLocales() as $akeneoLocale) {
             if ($akeneoLocale->getLocale() === $locale) {
@@ -650,29 +473,18 @@ class AkeneoSettings extends Transport
         return null;
     }
 
-    /**
-     * @return bool
-     */
-    public function isAclVoterEnabled()
+    public function isAclVoterEnabled(): bool
     {
         return $this->aclVoterEnabled;
     }
 
-    /**
-     * @param bool $aclVoterEnabled
-     *
-     * @return AkeneoSettings
-     */
-    public function setAclVoterEnabled($aclVoterEnabled)
+    public function setAclVoterEnabled(bool $aclVoterEnabled): self
     {
         $this->aclVoterEnabled = $aclVoterEnabled;
 
         return $this;
     }
 
-    /**
-     * @return PriceList
-     */
     public function getPriceList(): ?PriceList
     {
         return $this->priceList;
@@ -690,9 +502,6 @@ class AkeneoSettings extends Transport
         return $this->akeneoAttributesList;
     }
 
-    /**
-     * @param string $attributeList
-     */
     public function setAkeneoAttributesList(string $attributeList = null): self
     {
         $this->akeneoAttributesList = $attributeList;
@@ -700,18 +509,12 @@ class AkeneoSettings extends Transport
         return $this;
     }
 
-    /**
-     * @return bool
-     */
-    public function isAkeneoMergeImageToParent(): ?bool
+    public function isAkeneoMergeImageToParent(): bool
     {
         return $this->akeneoMergeImageToParent;
     }
 
-    /**
-     * @return $this
-     */
-    public function setAkeneoMergeImageToParent(bool $akeneoMergeImageToParent)
+    public function setAkeneoMergeImageToParent(bool $akeneoMergeImageToParent): self
     {
         $this->akeneoMergeImageToParent = $akeneoMergeImageToParent;
 

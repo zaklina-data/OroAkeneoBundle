@@ -16,60 +16,31 @@ use Psr\Http\Message\StreamFactoryInterface;
  */
 class AkeneoClientFactory
 {
-    /** @var Crypter */
-    private $crypter;
+    private string $akeneoUrl = '';
 
-    /** @var string */
-    private $akeneoUrl;
+    private string $clientId = '';
 
-    /** @var string */
-    private $clientId;
+    private string $secret = '';
 
-    /** @var string */
-    private $secret;
+    private string $userName = '';
 
-    /** @var string */
-    private $userName;
+    private string $password = '';
 
-    /** @var string */
-    private $password;
+    private string $token = '';
 
-    /** @var string */
-    private $token;
+    private string $refreshToken = '';
 
-    /** @var string */
-    private $refreshToken;
+    private ?AkeneoPimClientInterface $client = null;
 
-    /** @var AkeneoPimClientInterface */
-    private $client;
-
-    /** @var AkeneoSettings */
-    private $akeneoSettings;
-
-    /** @var DoctrineHelper */
-    private $doctrineHelper;
-
-    /** @var ClientInterface */
-    private $httpClient;
-
-    /** @var RequestFactoryInterface */
-    private $requestFactory;
-
-    /** @var StreamFactoryInterface */
-    private $streamFactory;
+    private ?AkeneoSettings $akeneoSettings = null;
 
     public function __construct(
-        DoctrineHelper $doctrineHelper,
-        Crypter $crypter,
-        ClientInterface $httpClient,
-        RequestFactoryInterface $requestFactory,
-        StreamFactoryInterface $streamFactory
+        private DoctrineHelper $doctrineHelper,
+        private Crypter $crypter,
+        private ClientInterface $httpClient,
+        private RequestFactoryInterface $requestFactory,
+        private StreamFactoryInterface $streamFactory
     ) {
-        $this->doctrineHelper = $doctrineHelper;
-        $this->crypter = $crypter;
-        $this->httpClient = $httpClient;
-        $this->requestFactory = $requestFactory;
-        $this->streamFactory = $streamFactory;
     }
 
     public function getInstance(AkeneoSettings $akeneoSettings, bool $tokensEnabled = true): AkeneoPimClientInterface
@@ -127,7 +98,7 @@ class AkeneoClientFactory
         return $clientBuilder;
     }
 
-    private function createClient(): AkeneoPimClientInterface
+    private function createClient(): void
     {
         $this->client = $this->getClientBuilder()->buildAuthenticatedByPassword(
             $this->clientId,
@@ -139,8 +110,6 @@ class AkeneoClientFactory
         if ($this->akeneoSettings->getId()) {
             $this->persistTokens();
         }
-
-        return $this->client;
     }
 
     /**

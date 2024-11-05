@@ -15,34 +15,17 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareInterface
 {
-    /** @var ManagerRegistry */
-    private $registry;
-
-    /** @var ImportStrategyHelper */
-    private $strategyHelper;
-
-    /** @var StepExecution */
-    private $stepExecution;
-
-    /** @var ContextRegistry */
-    private $contextRegistry;
-
-    /** @var TranslatorInterface */
-    private $translator;
+    private StepExecution $stepExecution;
 
     public function __construct(
-        ManagerRegistry $registry,
-        ImportStrategyHelper $strategyHelper,
-        ContextRegistry $contextRegistry,
-        TranslatorInterface $translator
+        private ManagerRegistry $registry,
+        private ImportStrategyHelper $strategyHelper,
+        private ContextRegistry $contextRegistry,
+        private TranslatorInterface $translator
     ) {
-        $this->registry = $registry;
-        $this->strategyHelper = $strategyHelper;
-        $this->contextRegistry = $contextRegistry;
-        $this->translator = $translator;
     }
 
-    public function setStepExecution(StepExecution $stepExecution)
+    public function setStepExecution(StepExecution $stepExecution): void
     {
         $this->stepExecution = $stepExecution;
     }
@@ -50,9 +33,8 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
     /**
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @param mixed $items
      */
-    public function process($items)
+    public function process(mixed $items): mixed
     {
         $parentSkus = array_column($items, 'parent');
         $variantSkus = array_values(array_column($items, 'variant'));
@@ -81,7 +63,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                         ),
                         '%item%' => json_encode(
                             $context->getValue('rawItemData'),
-                            \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                            JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
                         ),
                     ]
                 )
@@ -91,7 +73,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
         }
 
         $variantSkusUppercase = array_map(
-            function ($variantSku) {
+            static function ($variantSku) {
                 return mb_strtoupper($variantSku);
             },
             $variantSkus
@@ -100,7 +82,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
         $variantSkusUppercase = array_combine($variantSkusUppercase, $variantSkusUppercase);
         foreach ($parentProduct->getVariantLinks() as $variantLink) {
             $variantProduct = $variantLink->getProduct();
-            if (!$variantSkusUppercase) {
+            if ($variantProduct && !$variantSkusUppercase) {
                 $parentProduct->removeVariantLink($variantLink);
                 $variantProduct->setStatus(Product::STATUS_DISABLED);
                 $objectManager->remove($variantLink);
@@ -136,7 +118,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                             ),
                             '%item%' => json_encode(
                                 $context->getValue('rawItemData'),
-                                \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                                JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
                             ),
                         ]
                     )
@@ -214,7 +196,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                         ),
                         '%item%' => json_encode(
                             $context->getValue('rawItemData'),
-                            \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                            JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
                         ),
                     ]
                 )
@@ -226,6 +208,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
         $context->incrementUpdateCount();
         $parentProduct->setStatus(Product::STATUS_ENABLED);
 
+        // @TODO stevensonkuo check if program will run into here.
         foreach ($items as $item) {
             if (!empty($item['parent_disabled'])) {
                 $parentProduct->setStatus(Product::STATUS_DISABLED);

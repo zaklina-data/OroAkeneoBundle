@@ -7,7 +7,7 @@ use Oro\Bundle\ImportExportBundle\Event\StrategyEvent;
 
 class ClosableStrategyEventListener
 {
-    public function onProcessAfter(StrategyEvent $event)
+    public function onProcessAfter(StrategyEvent $event): void
     {
         if ($event->getStrategy() instanceof ClosableInterface) {
             $event->getStrategy()->close();

@@ -8,19 +8,10 @@ use Oro\Bundle\SegmentBundle\Entity\Segment;
 /**
  * Postpone segments updates
  */
-class ProductCollectionVariantReindexMessageSendListenerDecorator extends BaseListener implements AdditionalOptionalListenerInterface
+class ProductCollectionVariantReindexMessageSendListenerDecorator extends BaseListener implements
+    AdditionalOptionalListenerInterface
 {
     use AdditionalOptionalListenerTrait;
-
-    /**
-     * @var BaseListener
-     */
-    protected $innerListener;
-
-    public function __construct(BaseListener $innerListener)
-    {
-        $this->innerListener = $innerListener;
-    }
 
     public function postFlush(): void
     {
@@ -28,19 +19,16 @@ class ProductCollectionVariantReindexMessageSendListenerDecorator extends BaseLi
             return;
         }
 
-        $this->innerListener->postFlush();
+        parent::postFlush();
     }
 
-    /**
-     * @param bool $isFull
-     */
     public function scheduleSegment(Segment $segment, bool $isFull = false, array $additionalProducts = []): void
     {
         if (!$this->enabled) {
             return;
         }
 
-        $this->innerListener->scheduleSegment($segment, $isFull);
+        parent::scheduleSegment($segment, $isFull);
     }
 
     public function scheduleMessageBySegmentDefinition(Segment $segment): void
@@ -49,6 +37,6 @@ class ProductCollectionVariantReindexMessageSendListenerDecorator extends BaseLi
             return;
         }
 
-        $this->innerListener->scheduleMessageBySegmentDefinition($segment);
+        parent::scheduleMessageBySegmentDefinition($segment);
     }
 }

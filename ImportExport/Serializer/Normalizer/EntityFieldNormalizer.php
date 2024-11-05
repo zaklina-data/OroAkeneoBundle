@@ -3,25 +3,21 @@
 namespace Creativestyle\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer;
 
 use Creativestyle\Bundle\AkeneoBundle\Integration\AkeneoChannel;
+use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
 use Oro\Bundle\EntityConfigBundle\ImportExport\Serializer\EntityFieldNormalizer as BaseEntityFieldNormalizer;
 
 class EntityFieldNormalizer extends BaseEntityFieldNormalizer
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function supportsDenormalization($data, string $type, ?string $format = null, array $context = []): bool
     {
         return is_array($data)
-            && is_a($type, 'Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel', true)
+            && is_a($type, FieldConfigModel::class, true)
             && true === isset($context['channelType'])
             && AkeneoChannel::TYPE === $context['channelType'];
     }
 
-    /**
-     * @return array
-     */
-    protected function getEnumConfig()
+    protected function getEnumConfig(): array
     {
         return [
             'id' => [

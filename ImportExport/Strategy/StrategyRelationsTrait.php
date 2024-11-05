@@ -22,10 +22,10 @@ trait StrategyRelationsTrait
     /**
      * @param object $entity
      *
-     * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper::importEntity
      * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrategy::updateRelations
+     * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper::importEntity
      */
-    protected function updateRelations($entity, array $itemData = null)
+    protected function updateRelations($entity, array $itemData = null): void
     {
         $entityName = $this->doctrineHelper->getEntityClass($entity);
         $fields = $this->fieldHelper->getEntityFields(

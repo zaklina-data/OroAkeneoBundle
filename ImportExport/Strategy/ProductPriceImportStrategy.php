@@ -3,6 +3,7 @@
 namespace Creativestyle\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Creativestyle\Bundle\AkeneoBundle\ImportExport\AkeneoIntegrationTrait;
+use Oro\Bundle\PricingBundle\Entity\ProductPrice;
 use Oro\Bundle\PricingBundle\ImportExport\Strategy\ProductPriceImportStrategy as BaseStrategy;
 
 /**
@@ -13,14 +14,15 @@ class ProductPriceImportStrategy extends BaseStrategy
     use AkeneoIntegrationTrait;
     use StrategyValidationTrait;
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function beforeProcessEntity($entity)
+    #[\Override]
+    protected function beforeProcessEntity($entity): ?object
     {
-        if (
-            $entity->getPrice()
-            && !in_array($entity->getPrice()->getCurrency(), $this->getTransport()->getAkeneoActiveCurrencies())
+        if ($entity->getPrice()
+            && !in_array(
+                $entity->getPrice()->getCurrency(),
+                $this->getTransport()?->getAkeneoActiveCurrencies() ?? [],
+                true
+            )
         ) {
             return null;
         }
@@ -31,7 +33,10 @@ class ProductPriceImportStrategy extends BaseStrategy
         return $entity;
     }
 
-    protected function afterProcessEntity($entity)
+    /**
+     * @return ProductPrice|null
+     */
+    protected function afterProcessEntity($entity): ?object
     {
         $this->refreshPrice($entity);
 
@@ -44,7 +49,7 @@ class ProductPriceImportStrategy extends BaseStrategy
         return $entity;
     }
 
-    protected function updateContextCounters($entity)
+    protected function updateContextCounters($entity): void
     {
     }
 }

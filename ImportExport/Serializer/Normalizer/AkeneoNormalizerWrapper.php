@@ -5,7 +5,7 @@ namespace Creativestyle\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer;
 use Creativestyle\Bundle\AkeneoBundle\Integration\AkeneoChannel;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 
-class AkeneoNormalizerWrapper implements ContextAwareDenormalizerInterface
+readonly class AkeneoNormalizerWrapper implements ContextAwareDenormalizerInterface
 {
     public function __construct(private ContextAwareDenormalizerInterface $fileNormalizer)
     {

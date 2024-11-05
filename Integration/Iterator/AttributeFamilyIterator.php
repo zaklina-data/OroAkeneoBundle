@@ -14,9 +14,7 @@ class AttributeFamilyIterator extends AbstractIterator
      */
     private $groups = [];
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function doCurrent()
     {
         $family = $this->resourceCursor->current();

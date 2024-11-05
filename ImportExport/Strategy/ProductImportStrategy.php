@@ -19,17 +19,15 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
     use StrategyValidationTrait;
 
     /**
-     * @var Product[]
+     * Cache existing product request in scope of a single row processing to avoid excess DB queries.
      *
-     * Cache existing product request in scope of a single row processing to avoid excess DB queries
-     */
-    private $existingProducts = [];
+     * @var Product[]
+     **/
+    private array $existingProducts = [];
 
-    public function close()
+    public function close(): void
     {
-        $this->reflectionProperties = [];
         $this->cachedEntities = [];
-
         $this->existingProducts = [];
 
         $this->databaseHelper->onClear();
@@ -37,7 +35,7 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         parent::close();
     }
 
-    protected function beforeProcessEntity($entity)
+    protected function beforeProcessEntity($entity): ?object
     {
         /** @var Product $entity */
         if ($entity->isConfigurable()) {
@@ -51,7 +49,10 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         return parent::beforeProcessEntity($entity);
     }
 
-    protected function afterProcessEntity($entity)
+    /**
+     * @return Product
+     */
+    protected function afterProcessEntity($entity): object
     {
         if ($entity instanceof Product && $entity->getCategory() && !$entity->getCategory()->getId()) {
             $entity->setCategory(null);
@@ -89,7 +90,7 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         return parent::afterProcessEntity($entity);
     }
 
-    protected function validateAndUpdateContext($entity)
+    protected function validateAndUpdateContext($entity): object
     {
         $validationErrors = $this->strategyHelper->validateEntity($entity);
         if ($validationErrors) {
@@ -210,9 +211,7 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         return $this->findExistingEntityByIdentityFieldsTrait($entity, $searchContext);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function importExistingEntity($entity, $existingEntity, $itemData = null, array $excludedFields = [])
     {
         // Existing enum values shouldn't be modified. Just added to entity (collection).
@@ -223,9 +222,7 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         parent::importExistingEntity($entity, $existingEntity, $itemData, $excludedFields);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function updateContextCounters($entity)
     {
         $identifier = $this->databaseHelper->getIdentifier($entity);

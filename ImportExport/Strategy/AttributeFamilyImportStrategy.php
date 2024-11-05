@@ -25,35 +25,28 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
     private const GROUP_CODE_GENERAL = 'general';
     private const GROUP_CODE_IMAGES = 'images';
 
-    /**
-     * @var AttributeManager
-     */
-    protected $attributeManager;
+    protected AttributeManager $attributeManager;
 
-    /**
-     * @var ConfigManager
-     */
-    protected $configManager;
+    protected ConfigManager $configManager;
 
     public function setConfigManager(ConfigManager $configManager): void
     {
         $this->configManager = $configManager;
     }
 
-    public function setAttributeManager(AttributeManager $attributeManager)
+    public function setAttributeManager(AttributeManager $attributeManager): void
     {
         $this->attributeManager = $attributeManager;
     }
 
-    public function close()
+    public function close(): void
     {
-        $this->reflectionProperties = [];
         $this->cachedEntities = [];
 
         $this->databaseHelper->onClear();
     }
 
-    public function beforeProcessEntity($entity)
+    public function beforeProcessEntity($entity): object
     {
         $this->removeInactiveAttributes($entity);
         $this->setSystemAttributes($entity);
@@ -61,7 +54,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         return parent::beforeProcessEntity($entity);
     }
 
-    protected function findExistingEntity($entity, array $searchContext = [])
+    protected function findExistingEntity($entity, array $searchContext = []): mixed
     {
         if (is_a($entity, AttributeGroup::class)) {
             $family = $this->findExistingEntity($entity->getAttributeFamily());
@@ -79,7 +72,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         return $this->findExistingEntityTrait($entity, $searchContext);
     }
 
-    protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
+    protected function findExistingEntityByIdentityFields($entity, array $searchContext = []): mixed
     {
         if (is_a($entity, AttributeGroup::class)) {
             $family = $this->findExistingEntity($entity->getAttributeFamily());
@@ -97,7 +90,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         return $this->findExistingEntityByIdentityFieldsTrait($entity, $searchContext);
     }
 
-    private function removeInactiveAttributes(AttributeFamily $entity)
+    private function removeInactiveAttributes(AttributeFamily $entity): void
     {
         $extendProvider = $this->configManager->getProvider('extend');
 
@@ -117,10 +110,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         }
     }
 
-    /**
-     * @return FieldConfigModel|null
-     */
-    private function getFieldConfigModel(int $id)
+    private function getFieldConfigModel(int $id): ?FieldConfigModel
     {
         return $this->doctrineHelper
             ->getEntityRepository(FieldConfigModel::class)
@@ -158,7 +148,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
     ): ?AttributeGroupRelation {
         foreach ($attributeFamily->getAttributeGroups() as $attributeGroup) {
             foreach ($attributeGroup->getAttributeRelations() as $relation) {
-                if ($relation->getEntityConfigFieldId() == $attribute->getId()) {
+                if ($relation->getEntityConfigFieldId() === $attribute->getId()) {
                     return $relation;
                 }
             }
@@ -195,7 +185,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         foreach ($existingEntity->getAttributeRelations() as $existingRelation) {
             $match = false;
             foreach ($entity->getAttributeRelations() as $newRelation) {
-                if ($existingRelation->getEntityConfigFieldId() == $newRelation->getEntityConfigFieldId()) {
+                if ($existingRelation->getEntityConfigFieldId() === $newRelation->getEntityConfigFieldId()) {
                     $match = true;
                 }
             }
@@ -212,7 +202,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         foreach ($entity->getAttributeRelations() as $newRelation) {
             $match = false;
             foreach ($existingEntity->getAttributeRelations() as $existingRelation) {
-                if ($existingRelation->getEntityConfigFieldId() == $newRelation->getEntityConfigFieldId()) {
+                if ($existingRelation->getEntityConfigFieldId() === $newRelation->getEntityConfigFieldId()) {
                     $match = true;
                 }
             }
@@ -227,7 +217,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
      *
      * @param AttributeFamily $entity
      */
-    protected function updateContextCounters($entity)
+    protected function updateContextCounters($entity): void
     {
         $identifier = $this->databaseHelper->getIdentifier($entity);
         if ($identifier || $this->newEntitiesHelper->getEntityUsage($this->getEntityHashKey($entity)) > 1) {
@@ -273,7 +263,7 @@ class AttributeFamilyImportStrategy extends LocalizedFallbackValueAwareStrategy 
         return $imagesGroup;
     }
 
-    protected function combineIdentityValues($entity, $entityClass, array $searchContext)
+    protected function combineIdentityValues($entity, $entityClass, array $searchContext): ?array
     {
         if (is_a($entity, AttributeGroup::class)) {
             return [

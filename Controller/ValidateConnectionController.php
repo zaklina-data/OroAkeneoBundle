@@ -35,7 +35,11 @@ class ValidateConnectionController extends AbstractController
      * @throws ContainerExceptionInterface
      * @throws NotFoundExceptionInterface
      */
-    #[Route(path: '/validate-akeneo-connection/{channelId}/', name: 'oro_akeneo_validate_connection', methods: ['POST'])]
+    #[Route(
+        path: '/validate-akeneo-connection/{channelId}/',
+        name: 'oro_akeneo_validate_connection',
+        methods: ['POST']
+    )]
     #[ParamConverter('channel', class: Channel::class, options: ['id' => 'channelId'])]
     #[Acl(id: 'oro_integration_channel', type: 'entity', class: Channel::class, permission: 'VIEW')]
     public function validateConnectionAction(Request $request, Channel $channel = null): JsonResponse

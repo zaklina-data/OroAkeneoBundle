@@ -13,7 +13,8 @@ class OroAkeneoMigration implements Migration
         $table = $schema->getTable('oro_integration_transport');
         $table->addColumn('akeneo_conf_product_filter', 'text', ['notnull' => false]);
 
-        $queries->addPostQuery('UPDATE oro_integration_transport SET akeneo_conf_product_filter = akeneo_product_filter ' .
+        $queries->addPostQuery('UPDATE oro_integration_transport SET ' .
+            'akeneo_conf_product_filter = akeneo_product_filter ' .
             'WHERE akeneo_product_filter IS NOT NULL;');
     }
 }

@@ -14,26 +14,22 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
     use AkeneoIntegrationTrait;
     use LocalizationAwareTrait;
 
-    /** @var DoctrineHelper */
-    protected $doctrineHelper;
+    protected DoctrineHelper $doctrineHelper;
 
-    /** @var ContextInterface */
-    protected $context;
+    protected ContextInterface $context;
 
-    public function setImportExportContext(ContextInterface $context)
+    public function setImportExportContext(ContextInterface $context): void
     {
         $this->context = $context;
     }
 
-    public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper): void
     {
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
+    #[\Override]
+    public function convertToImportFormat(array $importedRecord, $skipNullValues = true): array
     {
         $this->setTitles($importedRecord);
         $this->setRootCategory($importedRecord);
@@ -46,7 +42,7 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
     /**
      * Set titles with locales mapping from settings.
      */
-    private function setTitles(array &$importedRecord)
+    private function setTitles(array &$importedRecord): void
     {
         $defaultLocalization = $this->getDefaultLocalization();
         $defaultLocale = $this->getTransport()->getMappedAkeneoLocale($defaultLocalization->getLanguageCode());
@@ -83,17 +79,16 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
             return;
         }
 
-        if (!$this->getTransport()->getRootCategory()) {
+        $rootCategoryId = $this->getTransport()?->getRootCategory()?->getId();
+        if (!$rootCategoryId) {
             return;
         }
 
-        $importedRecord['parentCategory:id'] = $this->getTransport()->getRootCategory()->getId();
+        $importedRecord['parentCategory:id'] = $rootCategoryId;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getHeaderConversionRules()
+    #[\Override]
+    protected function getHeaderConversionRules(): array
     {
         return [
             'titles' => 'titles',
@@ -101,10 +96,8 @@ class CategoryDataConverter extends LocalizedFallbackValueAwareDataConverter imp
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getBackendHeader()
+    #[\Override]
+    protected function getBackendHeader(): array
     {
         throw new \Exception('Normalization is not implemented!');
     }

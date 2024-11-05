@@ -47,8 +47,7 @@ class AkeneoClientFactory
     {
         $this->initProperties($akeneoSettings);
 
-        if (
-            $tokensEnabled
+        if ($tokensEnabled
             && $akeneoSettings->getToken()
             && $akeneoSettings->getTokenExpiryDateTime()
             && $akeneoSettings->getTokenExpiryDateTime() > new \DateTime('now', new \DateTimeZone('UTC'))

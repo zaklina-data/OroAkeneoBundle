@@ -18,9 +18,9 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implem
     /**
      * @var Product[]
      */
-    private $existingProducts = [];
+    private array $existingProducts = [];
 
-    public function close()
+    public function close(): void
     {
         $this->existingProducts = [];
     }
@@ -30,7 +30,7 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implem
      *
      * @return object
      */
-    protected function beforeProcessEntity($entity)
+    protected function beforeProcessEntity($entity): ?object
     {
         if (!$entity->getImage()) {
             return null;
@@ -67,11 +67,11 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implem
         return parent::beforeProcessEntity($entity);
     }
 
-    protected function updateContextCounters($entity)
+    protected function updateContextCounters($entity): void
     {
     }
 
-    protected function isFieldExcluded($entityName, $fieldName, $itemData = null)
+    protected function isFieldExcluded($entityName, $fieldName, $itemData = null): bool
     {
         $excludeImageFields = ['updatedAt', 'types'];
 
@@ -82,7 +82,7 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implem
         return parent::isFieldExcluded($entityName, $fieldName, $itemData);
     }
 
-    protected function findExistingEntity($entity, array $searchContext = [])
+    protected function findExistingEntity($entity, array $searchContext = []): ?object
     {
         if ($entity instanceof Product) {
             if (array_key_exists($entity->getSku(), $this->existingProducts)) {
@@ -112,7 +112,10 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implem
         return parent::findExistingEntity($entity, $searchContext);
     }
 
-    protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
+    /**
+     * @return Product|null
+     */
+    protected function findExistingEntityByIdentityFields($entity, array $searchContext = []): ?object
     {
         if ($entity instanceof Product) {
             if (array_key_exists($entity->getSku(), $this->existingProducts)) {
@@ -142,7 +145,7 @@ class ProductImageImportStrategy extends ConfigurableAddOrReplaceStrategy implem
         return parent::findExistingEntityByIdentityFields($entity, $searchContext);
     }
 
-    private function getChannel()
+    private function getChannel(): ?Channel
     {
         return $this->doctrineHelper->getEntityReference(Channel::class, $this->context->getOption('channel'));
     }

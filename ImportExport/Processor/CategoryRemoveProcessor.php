@@ -12,15 +12,11 @@ class CategoryRemoveProcessor implements ProcessorInterface, MemoryCacheProvider
 {
     use MemoryCacheProviderAwareTrait;
 
-    /** @var ManagerRegistry */
-    private $registry;
-
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(private ManagerRegistry $registry)
     {
-        $this->registry = $registry;
     }
 
-    public function process($item)
+    public function process(mixed $item): ?Category
     {
         if (!$item instanceof Category) {
             return null;

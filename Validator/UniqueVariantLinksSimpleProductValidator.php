@@ -14,29 +14,28 @@ class UniqueVariantLinksSimpleProductValidator extends ConstraintValidator
 {
     use ConfigurableProductAccessorTrait;
 
-    /** @var DoctrineHelper */
-    private $doctrineHelper;
-
-    /** @var ConstraintValidatorInterface */
-    private $validator;
-
-    public function __construct(DoctrineHelper $doctrineHelper, ConstraintValidatorInterface $validator)
-    {
-        $this->doctrineHelper = $doctrineHelper;
-        $this->validator = $validator;
+    public function __construct(
+        private DoctrineHelper $doctrineHelper,
+        private ConstraintValidatorInterface $validator
+    ) {
     }
 
-    public function initialize(ExecutionContextInterface $context)
+    public function initialize(ExecutionContextInterface $context): void
     {
         $this->validator->initialize($context);
 
         parent::initialize($context);
     }
 
-    public function validate($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
         if (!is_a($value, Product::class)) {
-            throw new \InvalidArgumentException(sprintf('Entity must be instance of "%s", "%s" given', Product::class, is_object($value) ? get_class($value) : gettype($value)));
+            $message = sprintf(
+                'Entity must be instance of "%s", "%s" given',
+                Product::class,
+                is_object($value) ? get_class($value) : gettype($value)
+            );
+            throw new \InvalidArgumentException($message);
         }
 
         if ($value->isConfigurable() || $value->getParentVariantLinks()->count() === 0) {
@@ -45,10 +44,9 @@ class UniqueVariantLinksSimpleProductValidator extends ConstraintValidator
 
         $uow = $this->doctrineHelper->getEntityManagerForClass(Product::class)->getUnitOfWork();
         $collections = array_merge($uow->getScheduledCollectionUpdates(), $uow->getScheduledCollectionDeletions());
-        if (
-            !in_array($value->getVariantLinks(), $collections)
-            && !in_array($value->getParentVariantLinks(), $collections)
-            && empty($uow->getEntityChangeSet($value)['variantFields'])
+        if (empty($uow->getEntityChangeSet($value)['variantFields'])
+            && !in_array($value->getVariantLinks(), $collections, true)
+            && !in_array($value->getParentVariantLinks(), $collections, true)
         ) {
             return;
         }

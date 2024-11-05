@@ -4,6 +4,7 @@ namespace Creativestyle\Bundle\AkeneoBundle\Integration;
 
 use Akeneo\Pim\ApiClient\AkeneoPimClientInterface;
 use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
+use ArrayIterator;
 use Creativestyle\Bundle\AkeneoBundle\Client\AkeneoClientFactory;
 use Creativestyle\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Creativestyle\Bundle\AkeneoBundle\Form\Type\AkeneoSettingsType;
@@ -24,63 +25,40 @@ class AkeneoTransport implements AkeneoTransportInterface
 {
     use LoggerAwareTrait;
 
-    const PAGE_SIZE = 100;
+    private const PAGE_SIZE = 100;
 
-    private $attributes = [];
+    private array $attributes = [];
 
-    private $familyVariants = [];
+    private array $familyVariants = [];
 
-    private $families = [];
+    private array $families = [];
 
-    private $measureFamilies = [];
+    private array $measureFamilies = [];
 
-    private $attributeMapping = [];
+    private array $attributeMapping = [];
 
-    /** @var AkeneoClientFactory */
-    private $clientFactory;
+    private AkeneoPimClientInterface $client;
 
-    /** @var AkeneoPimClientInterface */
-    private $client;
-
-    /** @var CurrencyProviderInterface */
-    private $configProvider;
-
-    /** @var AkeneoSettings */
-    private $transportEntity;
-
-    /** @var AkeneoSearchBuilder */
-    private $akeneoSearchBuilder;
-
-    /** @var FileManager */
-    private $fileManager;
+    private AkeneoSettings $transportEntity;
 
     public function __construct(
-        AkeneoClientFactory $clientFactory,
-        CurrencyProviderInterface $configProvider,
-        AkeneoSearchBuilder $akeneoSearchBuilder,
-        FileManager $fileManager,
+        private AkeneoClientFactory $clientFactory,
+        private CurrencyProviderInterface $configProvider,
+        private AkeneoSearchBuilder $akeneoSearchBuilder,
+        private FileManager $fileManager,
         LoggerInterface $logger
     ) {
-        $this->clientFactory = $clientFactory;
-        $this->configProvider = $configProvider;
-        $this->akeneoSearchBuilder = $akeneoSearchBuilder;
-        $this->fileManager = $fileManager;
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function init(Transport $transportEntity, $tokensEnabled = true)
+    #[\Override]
+    public function init(Transport $transportEntity, $tokensEnabled = true): void
     {
         $this->client = $this->clientFactory->getInstance($transportEntity, $tokensEnabled);
         $this->transportEntity = $transportEntity;
     }
 
-    /**
-     * @return array
-     */
-    public function getCurrencies()
+    public function getCurrencies(): array
     {
         $currencies = [];
 
@@ -115,15 +93,12 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $currencies;
     }
 
-    public function setConfigProvider(CurrencyProviderInterface $configProvider)
+    public function setConfigProvider(CurrencyProviderInterface $configProvider): void
     {
         $this->configProvider = $configProvider;
     }
 
-    /**
-     * @return array
-     */
-    public function getLocales()
+    public function getLocales(): array
     {
         $locales = [];
 
@@ -152,17 +127,15 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $channels;
     }
 
-    /**
-     * @return \Iterator
-     */
-    public function getCategories(int $pageSize)
+    public function getCategories(int $pageSize): \Iterator|ArrayIterator
     {
         $categoryTreeChannel = null;
         $akeneoChannel = $this->transportEntity->getAkeneoActiveChannel();
 
         if (!empty($akeneoChannel)) {
             foreach ($this->client->getChannelApi()->all() as $channel) {
-                $categoryTreeChannel = ($channel['code'] == $akeneoChannel && !empty($channel['category_tree'])) ? $channel['category_tree'] : null;
+                $categoryTreeChannel = ($channel['code'] === $akeneoChannel && !empty($channel['category_tree']))
+                    ? $channel['category_tree'] : null;
 
                 if (null !== $categoryTreeChannel) {
                     break;
@@ -178,7 +151,9 @@ class AkeneoTransport implements AkeneoTransportInterface
         $akeneoTree = new \ArrayIterator([], \ArrayIterator::STD_PROP_LIST);
 
         foreach ($this->client->getCategoryApi()->all($pageSize) as $category) {
-            if ($category['code'] == $categoryTreeChannel || in_array($category['parent'], $parentCategory)) {
+            if ($category['code'] === $categoryTreeChannel
+                || in_array($category['parent'], $parentCategory, true)
+            ) {
                 $parentCategory[] = $category['code'];
                 $akeneoTree->append($category);
             }
@@ -191,7 +166,7 @@ class AkeneoTransport implements AkeneoTransportInterface
     /**
      * @return \Iterator
      */
-    public function getAttributeFamilies()
+    public function getAttributeFamilies(): AttributeFamilyIterator
     {
         return new AttributeFamilyIterator(
             $this->client->getFamilyApi()->all(self::PAGE_SIZE),
@@ -200,12 +175,8 @@ class AkeneoTransport implements AkeneoTransportInterface
         );
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @return \Iterator
-     */
-    public function getProducts(int $pageSize)
+    #[\Override]
+    public function getProducts(int $pageSize): \Iterator
     {
         $this->initAttributesList();
         $this->initMeasureFamilies();
@@ -272,10 +243,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         );
     }
 
-    /**
-     * @return \Iterator
-     */
-    public function getProductModels(int $pageSize)
+    public function getProductModels(int $pageSize): \Iterator
     {
         $this->initAttributesList();
         $this->initFamilyVariants();
@@ -321,25 +289,19 @@ class AkeneoTransport implements AkeneoTransportInterface
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getSettingsFormType()
     {
         return AkeneoSettingsType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getSettingsEntityFQCN()
     {
         return AkeneoSettings::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getLabel()
     {
         return 'oro.akeneo.integration.settings.label';

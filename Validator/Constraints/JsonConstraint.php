@@ -9,22 +9,15 @@ use Symfony\Component\Validator\Constraint;
  */
 class JsonConstraint extends Constraint
 {
-    /**
-     * @var string
-     */
-    public $message = 'oro.akeneo.validator.ajax.message';
+    public string $message = 'oro.akeneo.validator.ajax.message';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getTargets(): string|array
     {
         return self::CLASS_CONSTRAINT;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function validatedBy(): string
     {
         return 'oro_akeneo.json_validator';

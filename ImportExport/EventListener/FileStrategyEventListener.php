@@ -11,15 +11,14 @@ use Oro\Bundle\ImportExportBundle\Event\StrategyEvent;
 
 class FileStrategyEventListener
 {
-    /** @var FieldHelper */
-    private $fieldHelper;
+    private FieldHelper $fieldHelper;
 
     public function __construct(FieldHelper $fieldHelper)
     {
         $this->fieldHelper = $fieldHelper;
     }
 
-    public function onProcessBefore(StrategyEvent $event)
+    public function onProcessBefore(StrategyEvent $event): void
     {
         $strategy = $event->getStrategy();
         if (!$strategy instanceof ExistingEntityAwareInterface) {

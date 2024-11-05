@@ -42,17 +42,13 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         ],
     ];
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getMigrationVersion()
     {
         return 'v1_16';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries)
     {
         /* Tables generation */
@@ -286,9 +282,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function setExtendExtension(ExtendExtension $extendExtension)
     {
         $this->extendExtension = $extendExtension;

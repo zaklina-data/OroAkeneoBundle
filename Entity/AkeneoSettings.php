@@ -88,7 +88,8 @@ class AkeneoSettings extends Transport
         targetEntity: AkeneoLocale::class,
         cascade: ['persist'],
         fetch: 'EAGER',
-        orphanRemoval: true)
+        orphanRemoval: true
+    )
     ]
     private Collection $akeneoLocales;
 
@@ -112,7 +113,7 @@ class AkeneoSettings extends Transport
     private ?string $akeneoAttributesMapping = null;
 
     #[ORM\Column(name: 'akeneo_brand_reference_code', type: 'string', length: 255)]
-    private string $akeneoBrandReferenceEntityCode = '';
+    private ?string $akeneoBrandReferenceEntityCode = null;
 
     #[ORM\Column(name: 'akeneo_brand_mapping', type: 'text', nullable: true)]
     private ?string $akeneoBrandMapping = null;
@@ -152,12 +153,12 @@ class AkeneoSettings extends Transport
         return $this;
     }
 
-    public function getProductFilter(): string
+    public function getProductFilter(): ?string
     {
         return $this->productFilter;
     }
 
-    public function setProductFilter(string $productFilter): static
+    public function setProductFilter(?string $productFilter): static
     {
         $this->productFilter = $productFilter;
 
@@ -169,7 +170,7 @@ class AkeneoSettings extends Transport
         return $this->configurableProductFilter;
     }
 
-    public function setConfigurableProductFilter(string $configurableProductFilter): static
+    public function setConfigurableProductFilter(?string $configurableProductFilter): static
     {
         $this->configurableProductFilter = $configurableProductFilter;
 

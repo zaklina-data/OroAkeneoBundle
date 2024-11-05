@@ -11,8 +11,7 @@ use Oro\Bundle\IntegrationBundle\Entity\Channel;
  */
 trait AkeneoIntegrationTrait
 {
-    /** @var AkeneoSettings */
-    protected $transport;
+    protected ?AkeneoSettings $transport = null;
 
     private function getTransport(): ?AkeneoSettings
     {

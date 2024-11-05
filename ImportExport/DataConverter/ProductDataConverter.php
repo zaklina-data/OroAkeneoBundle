@@ -12,8 +12,6 @@ use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityBundle\Provider\EntityFieldProvider;
 use Oro\Bundle\EntityConfigBundle\Config\ConfigManager;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
-use Oro\Bundle\ImportExportBundle\Context\ContextAwareInterface;
-use Oro\Bundle\ImportExportBundle\Context\ContextInterface;
 use Oro\Bundle\LocaleBundle\Entity\AbstractLocalizedFallbackValue;
 use Oro\Bundle\LocaleBundle\Entity\Localization;
 use Oro\Bundle\LocaleBundle\Formatter\DateTimeFormatterInterface;
@@ -28,44 +26,29 @@ use Psr\Log\LoggerAwareTrait;
  *
  * @SuppressWarnings(PHPMD.ExcessiveClassComplexity)
  */
-class ProductDataConverter extends BaseProductDataConverter implements ContextAwareInterface, LoggerAwareInterface
+class ProductDataConverter extends BaseProductDataConverter implements LoggerAwareInterface
 {
     use AkeneoIntegrationTrait;
     use LocalizationAwareTrait;
     use LoggerAwareTrait;
 
-    /** @var ConfigManager */
-    protected $entityConfigManager;
+    protected ConfigManager $entityConfigManager;
 
-    /** @var DateTimeFormatterInterface */
-    protected $dateTimeFormatter;
+    protected DateTimeFormatterInterface $dateTimeFormatter;
 
-    /** @var array */
-    protected $akeneoFields = [];
+    protected array $akeneoFields = [];
 
-    /** @var array */
-    protected $systemFields = [];
+    protected array $systemFields = [];
 
-    private $mappedAttributes = [];
+    private array $mappedAttributes = [];
 
-    /** @var ProductUnitDiscoveryInterface */
-    private $productUnitDiscovery;
+    private ProductUnitDiscoveryInterface $productUnitDiscovery;
 
-    /** @var DoctrineHelper */
-    protected $doctrineHelper;
+    protected DoctrineHelper $doctrineHelper;
 
-    /** @var ProductVariantFieldValueHandlerRegistry */
-    private $productVariantFieldValueHandlerRegistry;
+    private ProductVariantFieldValueHandlerRegistry $productVariantFieldValueHandlerRegistry;
 
-    /** @var ContextInterface */
-    protected $context;
-
-    public function setImportExportContext(ContextInterface $context): void
-    {
-        $this->context = $context;
-    }
-
-    public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper): void
     {
         $this->doctrineHelper = $doctrineHelper;
     }
@@ -75,10 +58,8 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $this->productUnitDiscovery = $productUnitDiscovery;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
+    #[\Override]
+    public function convertToImportFormat(array $importedRecord, $skipNullValues = true): array
     {
         unset($importedRecord['_links']);
 
@@ -109,7 +90,8 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     private function setPrimaryUnitPrecision(array &$importedRecord): void
     {
         try {
-            $importedRecord['primaryUnitPrecision'] = $this->productUnitDiscovery->discover($this->getTransport(), $importedRecord);
+            $importedRecord['primaryUnitPrecision'] = $this->productUnitDiscovery
+                ->discover($this->getTransport(), $importedRecord);
         } catch (IgnoreProductUnitChangesException $e) {
             $this->logger->info($e->getMessage());
         }
@@ -128,7 +110,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     /**
      * Set family variant for configurable products.
      */
-    private function setFamilyVariant(array &$importedRecord)
+    private function setFamilyVariant(array &$importedRecord): void
     {
         $importedRecord['attributeFamily'] = ['code' => 'default_family'];
         if (!empty($importedRecord['family'])) {
@@ -148,7 +130,6 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
 
         $sets = $importedRecord['family_variant']['variant_attribute_sets'] ?: [];
         $isTwoLevelFamilyVariant = count($sets) === 2;
-        $isFirstLevelProduct = empty($importedRecord['parent']);
         $isSecondLevelProduct = !empty($importedRecord['parent']);
 
         if ($isTwoLevelFamilyVariant && $isSecondLevelProduct) {
@@ -181,7 +162,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $importedRecord['variantFields'] = implode(',', $variantFields);
     }
 
-    private function processValues(array &$importedRecord)
+    private function processValues(array &$importedRecord): void
     {
         if (!is_array($importedRecord['values'])) {
             return;
@@ -200,7 +181,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         }
     }
 
-    private function processValue(array &$importedRecord, array $field, array $value)
+    private function processValue(array &$importedRecord, array $field, array $value): void
     {
         $importExportProvider = $this->entityConfigManager->getProvider('importexport');
         $importExportConfig = $importExportProvider->getConfig(Product::class, $field['name']);
@@ -227,14 +208,10 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
                 $importedRecord[$field['name']] = $this->processMultiEnumType($value);
                 break;
             case 'file':
-                $importedRecord[$field['name']] = $this->processFileType($value);
-                break;
             case 'image':
                 $importedRecord[$field['name']] = $this->processFileType($value);
                 break;
             case 'multiFile':
-                $importedRecord[$field['name']] = $this->processFileTypes($value);
-                break;
             case 'multiImage':
                 $importedRecord[$field['name']] = $this->processFileTypes($value);
                 break;
@@ -271,10 +248,9 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     private function getMappedAttribute(string $attributeCode): ?string
     {
         if (!$this->mappedAttributes) {
-            $attributesMappings = trim(
-                $this->getTransport()->getAkeneoAttributesMapping() ?? AkeneoSettings::DEFAULT_ATTRIBUTES_MAPPING,
-                ';:'
-            );
+            $mappingAlias = $this->getTransport()?->getAkeneoAttributesMapping()
+                ?? AkeneoSettings::DEFAULT_ATTRIBUTES_MAPPING;
+            $attributesMappings = trim($mappingAlias, ';:');
 
             if (!empty($attributesMappings)) {
                 $attributesMapping = explode(';', $attributesMappings);
@@ -289,7 +265,7 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
             }
         }
 
-        $key = array_search($attributeCode, $this->mappedAttributes);
+        $key = array_search($attributeCode, $this->mappedAttributes, true);
         if ($key) {
             return $key;
         }
@@ -297,13 +273,14 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         return null;
     }
 
-    private function prepareFieldMapping()
+    private function prepareFieldMapping(): void
     {
         if ($this->systemFields) {
             return;
         }
 
-        $fields = $this->fieldHelper->getEntityFields(Product::class, EntityFieldProvider::OPTION_WITH_RELATIONS);
+        $fields = $this->fieldHelper
+            ->getEntityFields(Product::class, EntityFieldProvider::OPTION_WITH_RELATIONS);
         $importExportProvider = $this->entityConfigManager->getProvider('importexport');
 
         foreach ($fields as $field) {
@@ -397,8 +374,9 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $result = [];
 
         foreach ($value as $item) {
-            $ids = array_merge($ids, $item['data']);
+            $ids[] = $item['data'];
         }
+        $ids = array_merge(...$ids);
 
         foreach (array_unique($ids) as $data) {
             $result[] = [
@@ -441,11 +419,9 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         return $code;
     }
 
-    /**
-     * @return mixed
-     */
-    private function processBasicType(array $value)
+    private function processBasicType(array $value): mixed
     {
+        // @TODO stevensonkuo mysterious.
         $item = array_shift($value);
 
         if ('pim_catalog_metric' === $item['type']) {
@@ -469,14 +445,14 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         return $item['data'];
     }
 
-    private function setBrand(array &$importedRecord)
+    private function setBrand(array &$importedRecord): void
     {
         if (!empty($importedRecord['brand'])) {
             $importedRecord['brand'] = ['akeneo_code' => $importedRecord['brand']];
         }
     }
 
-    private function setSku(array &$importedRecord)
+    private function setSku(array &$importedRecord): void
     {
         $identifier = $importedRecord['identifier'] ?? $importedRecord['code'];
 
@@ -486,9 +462,9 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
     /**
      * Set category.
      */
-    private function setCategory(array &$importedRecord)
+    private function setCategory(array &$importedRecord): void
     {
-        $categories = array_filter((array)$importedRecord['categories'] ?? []);
+        $categories = array_filter((array)($importedRecord['categories'] ?? []));
         unset($importedRecord['categories']);
         if (!$categories) {
             return;
@@ -507,18 +483,14 @@ class ProductDataConverter extends BaseProductDataConverter implements ContextAw
         $this->dateTimeFormatter = $dateTimeFormatter;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getHeaderConversionRules()
+    #[\Override]
+    protected function getHeaderConversionRules(): array
     {
         return [];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getBackendHeader()
+    #[\Override]
+    protected function getBackendHeader(): array
     {
         throw new \Exception('Normalization is not implemented!');
     }

@@ -8,10 +8,8 @@ use Symfony\Component\Validator\ConstraintValidator;
 
 class JsonValidator extends ConstraintValidator
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function validate($value, Constraint $constraint)
+    #[\Override]
+    public function validate($value, Constraint $constraint): void
     {
         /* @var JsonConstraint $constraint */
         if (!$this->isJSON($value) && strlen($value) > 0) {
@@ -19,12 +17,10 @@ class JsonValidator extends ConstraintValidator
         }
     }
 
-    /**
-     * @param mixed $string
-     * @return bool
-     */
-    private function isJSON($string)
+    private function isJSON(mixed $string): bool
     {
-        return is_string($string) && is_array(json_decode($string, true)) && \JSON_ERROR_NONE == json_last_error();
+        return is_string($string)
+            && is_array(json_decode($string, true, 512, JSON_THROW_ON_ERROR))
+            && \JSON_ERROR_NONE === json_last_error();
     }
 }

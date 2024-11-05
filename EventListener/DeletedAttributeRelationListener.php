@@ -48,7 +48,7 @@ class DeletedAttributeRelationListener extends BaseListener
 
             $this->deletedAttributesNames[$attributeFamilyId] = array_merge(
                 $this->deletedAttributesNames[$attributeFamilyId] ?? [],
-                    $attributes
+                $attributes
             );
             unset($this->deletedAttributes[$attributeFamilyId]);
         }

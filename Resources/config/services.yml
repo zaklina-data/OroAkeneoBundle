@@ -153,7 +153,9 @@ services:
         decoration_priority: -255
         public: true
         arguments:
-            - '@oro_akeneo.event_listener.product_collection_variant_reindex_message_send_listener.decorator.inner'
+            - '@oro_product.handler.async_reindex_product_collection_handler'
+            - '@oro_product.helper.product_collection_segment'
+            - '@oro_product.model.segment_message_factory'
 
     oro_akeneo.event_listener.reindex_parent_configurable_product.decorator:
         class: Creativestyle\Bundle\AkeneoBundle\EventListener\ReindexParentConfigurableProductListenerDecorator

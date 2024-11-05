@@ -21,26 +21,22 @@ class AttributeDataConverter extends EntityFieldDataConverter
 
     private const ENTITY_LABEL_MAX_LENGTH = 50;
 
-    /** @var DoctrineHelper */
-    protected $doctrineHelper;
+    protected DoctrineHelper $doctrineHelper;
 
-    /** @var TranslatorInterface */
-    protected $translator;
+    protected TranslatorInterface $translator;
 
-    public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper): void
     {
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    public function setTranslator(TranslatorInterface $translator)
+    public function setTranslator(TranslatorInterface $translator): void
     {
         $this->translator = $translator;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
+    #[\Override]
+    public function convertToImportFormat(array $importedRecord, $skipNullValues = true): array
     {
         $type = AttributeTypeConverter::convert($importedRecord['type']);
         if (!$type) {
@@ -58,8 +54,8 @@ class AttributeDataConverter extends EntityFieldDataConverter
                             '%error%' => $message,
                             '%item%' => json_encode(
                                 $importedRecord,
-                                \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
-                            ),
+                                JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+                            )
                         ]
                     )
                 );
@@ -80,7 +76,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
     /**
      * Set labels with locales mapping from settings.
      */
-    private function setLabels(array &$importedRecord)
+    private function setLabels(array &$importedRecord): void
     {
         $defaultLocalization = $this->getDefaultLocalization();
         $defaultLocale = $this->getTransport()->getMappedAkeneoLocale($defaultLocalization->getLanguageCode());
@@ -140,21 +136,5 @@ class AttributeDataConverter extends EntityFieldDataConverter
                 }
             }
         }
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getHeaderConversionRules()
-    {
-        return [];
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    protected function getBackendHeader()
-    {
-        throw new \Exception('Normalization is not implemented!');
     }
 }

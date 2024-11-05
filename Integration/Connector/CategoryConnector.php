@@ -11,45 +11,35 @@ use Oro\Bundle\IntegrationBundle\Provider\AbstractConnector;
  */
 class CategoryConnector extends AbstractConnector
 {
-    const IMPORT_JOB_NAME = 'akeneo_category_import';
-    const PAGE_SIZE = 25;
+    private const IMPORT_JOB_NAME = 'akeneo_category_import';
+    private const PAGE_SIZE = 25;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getLabel(): string
     {
         return 'oro.akeneo.connector.category.label';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getImportEntityFQCN()
+    #[\Override]
+    public function getImportEntityFQCN(): string
     {
         return Category::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getImportJobName()
+    #[\Override]
+    public function getImportJobName(): string
     {
         return self::IMPORT_JOB_NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getType()
+    #[\Override]
+    public function getType(): string
     {
         return 'category';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getConnectorSource()
+    #[\Override]
+    protected function getConnectorSource(): iterable
     {
         return $this->transport->getCategories(self::PAGE_SIZE);
     }

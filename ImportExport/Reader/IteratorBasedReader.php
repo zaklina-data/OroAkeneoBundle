@@ -17,9 +17,7 @@ abstract class IteratorBasedReader extends AbstractReader
      */
     protected $rewound = false;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function read()
     {
         if (null === $this->getSourceIterator()) {

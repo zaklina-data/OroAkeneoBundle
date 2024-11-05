@@ -17,18 +17,16 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
     use StrategyRelationsTrait;
     use StrategyValidationTrait;
 
-    /** @var SlugGenerator */
-    private $slugGenerator;
+    private SlugGenerator $slugGenerator;
 
-    public function close()
+    public function close(): void
     {
-        $this->reflectionProperties = [];
         $this->cachedEntities = [];
 
         $this->databaseHelper->onClear();
     }
 
-    protected function afterProcessEntity($entity)
+    protected function afterProcessEntity($entity): object
     {
         if ($entity->getSlugPrototypes()->isEmpty()) {
             foreach ($entity->getNames() as $localizedName) {
@@ -54,10 +52,10 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
 
     public function getExistingEntity(object $entity, array $searchContext = []): ?object
     {
-        return parent::findExistingEntity($entity, $searchContext);
+        return self::findExistingEntity($entity, $searchContext);
     }
 
-    protected function updateContextCounters($entity)
+    protected function updateContextCounters(mixed $entity): void
     {
         $identifier = $this->databaseHelper->getIdentifier($entity);
         if ($identifier || $this->newEntitiesHelper->getEntityUsage($this->getEntityHashKey($entity)) > 1) {
@@ -67,7 +65,8 @@ class BrandImportStrategy extends LocalizedFallbackValueAwareStrategy implements
         }
     }
 
-    protected function isFieldExcluded($entityName, $fieldName, $itemData = null)
+    #[\Override]
+    protected function isFieldExcluded($entityName, $fieldName, $itemData = null): bool
     {
         $excludeBrandFields = [
             'slugs',

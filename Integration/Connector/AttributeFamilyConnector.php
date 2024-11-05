@@ -11,44 +11,34 @@ use Oro\Bundle\IntegrationBundle\Provider\AbstractConnector;
  */
 class AttributeFamilyConnector extends AbstractConnector
 {
-    const IMPORT_JOB_NAME = 'akeneo_attribute_family_import';
+    private const IMPORT_JOB_NAME = 'akeneo_attribute_family_import';
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getLabel(): string
     {
         return 'oro.akeneo.connector.attribute_family.label';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getImportEntityFQCN()
+    #[\Override]
+    public function getImportEntityFQCN(): string
     {
         return AttributeFamily::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getImportJobName()
+    #[\Override]
+    public function getImportJobName(): string
     {
         return self::IMPORT_JOB_NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getType()
+    #[\Override]
+    public function getType(): string
     {
         return 'attribute_family';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getConnectorSource()
+    #[\Override]
+    protected function getConnectorSource(): iterable
     {
         return $this->transport->getAttributeFamilies();
     }

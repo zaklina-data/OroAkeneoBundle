@@ -8,7 +8,7 @@ use Symfony\Component\Validator\ConstraintValidator;
 
 class AttributeMappingValidator extends ConstraintValidator
 {
-    public function validate($value, Constraint $constraint)
+    public function validate($value, Constraint $constraint): void
     {
         /* @var AttributeMappingConstraint $constraint */
         if (!empty($value) && !$this->isValid($value)) {
@@ -16,10 +16,10 @@ class AttributeMappingValidator extends ConstraintValidator
         }
     }
 
-    private function isValid($value)
+    private function isValid($value): bool
     {
         preg_match_all('/([a-z0-9_]+[:;]?)+/i', $value, $matches, \PREG_SET_ORDER, 0);
 
-        return count($matches) == 1;
+        return count($matches) === 1;
     }
 }

@@ -8,26 +8,18 @@ use Psr\Log\LoggerInterface;
 
 class AttributeIterator extends AbstractIterator
 {
-    /**
-     * @var array
-     */
-    private $attributesFilter = [];
+    private array $attributesFilter = [];
 
-    /**
-     * @var \ArrayIterator
-     */
-    private $attributes;
+    private \ArrayIterator $attributes;
 
     /**
      * AttributeIterator constructor.
-     *
-     * @param array $attributesFilter
      */
     public function __construct(
         ResourceCursorInterface $resourceCursor,
         AkeneoPimClientInterface $client,
         LoggerInterface $logger,
-        $attributesFilter = []
+        array $attributesFilter = []
     ) {
         $this->attributesFilter = $attributesFilter;
         $this->attributes = new \ArrayIterator();
@@ -35,19 +27,17 @@ class AttributeIterator extends AbstractIterator
         parent::__construct($resourceCursor, $client, $logger);
     }
 
-    const OPTION_TYPES = [
+    private const OPTION_TYPES = [
         'pim_catalog_simpleselect',
         'pim_catalog_multiselect',
     ];
 
-    const REFERENCE_ENTITY_TYPES = [
+    private const REFERENCE_ENTITY_TYPES = [
         'akeneo_reference_entity',
         'akeneo_reference_entity_collection',
     ];
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function doCurrent()
     {
         $attribute = $this->attributes->current();
@@ -93,9 +83,9 @@ class AttributeIterator extends AbstractIterator
     /**
      * Get attribute options from API.
      */
-    private function setOptions(array &$attribute)
+    private function setOptions(array &$attribute): void
     {
-        if (!in_array($attribute['type'], self::OPTION_TYPES)) {
+        if (!in_array($attribute['type'], self::OPTION_TYPES, true)) {
             return;
         }
 
@@ -107,8 +97,8 @@ class AttributeIterator extends AbstractIterator
 
         usort(
             $attribute['options'],
-            function ($a, $b) {
-                if ($a['sort_order'] == $b['sort_order']) {
+            static function ($a, $b) {
+                if ($a['sort_order'] === $b['sort_order']) {
                     return 0;
                 }
 
@@ -122,7 +112,7 @@ class AttributeIterator extends AbstractIterator
      */
     private function setReferenceEntityRecords(array &$attribute): void
     {
-        if (!in_array($attribute['type'], self::REFERENCE_ENTITY_TYPES)) {
+        if (!in_array($attribute['type'], self::REFERENCE_ENTITY_TYPES, true)) {
             return;
         }
 

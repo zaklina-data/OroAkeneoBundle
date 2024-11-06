@@ -221,7 +221,7 @@ class ProductDataConverter extends BaseProductDataConverter implements LoggerAwa
         }
     }
 
-    private function processSystemValues(array &$importedRecord)
+    private function processSystemValues(array &$importedRecord): void
     {
         if (!is_array($importedRecord['values'])) {
             return;
@@ -421,25 +421,24 @@ class ProductDataConverter extends BaseProductDataConverter implements LoggerAwa
 
     private function processBasicType(array $value): mixed
     {
-        // @TODO stevensonkuo mysterious.
         $item = array_shift($value);
 
         if ('pim_catalog_metric' === $item['type']) {
-            $value = sprintf(
+            $itemData = sprintf(
                 '%s %s',
                 (float)$item['data']['amount'],
                 ucfirst(mb_strtolower($item['data']['unit']))
             );
 
             if (isset($item['data']['symbol'])) {
-                $value = sprintf(
+                $itemData = sprintf(
                     '%s (%s)',
-                    $value,
+                    $itemData,
                     $item['data']['symbol']
                 );
             }
 
-            $item['data'] = $value;
+            $item['data'] = $itemData;
         }
 
         return $item['data'];

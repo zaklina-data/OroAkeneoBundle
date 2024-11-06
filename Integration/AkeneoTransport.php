@@ -4,7 +4,6 @@ namespace Creativestyle\Bundle\AkeneoBundle\Integration;
 
 use Akeneo\Pim\ApiClient\AkeneoPimClientInterface;
 use Akeneo\Pim\ApiClient\Exception\NotFoundHttpException;
-use ArrayIterator;
 use Creativestyle\Bundle\AkeneoBundle\Client\AkeneoClientFactory;
 use Creativestyle\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Creativestyle\Bundle\AkeneoBundle\Form\Type\AkeneoSettingsType;
@@ -73,10 +72,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $currencies;
     }
 
-    /**
-     * @return array
-     */
-    public function getMergedCurrencies()
+    public function getMergedCurrencies(): array
     {
         $currencies = [];
         $oroCurrencies = $this->configProvider->getCurrencies();
@@ -85,7 +81,7 @@ class AkeneoTransport implements AkeneoTransportInterface
             if (false === $currency['enabled']) {
                 continue;
             }
-            if (in_array($currency['code'], $oroCurrencies)) {
+            if (in_array($currency['code'], $oroCurrencies, true)) {
                 $currencies[$currency['code']] = $currency['code'];
             }
         }
@@ -114,10 +110,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $locales;
     }
 
-    /**
-     * @return array
-     */
-    public function getChannels()
+    public function getChannels(): array
     {
         $channels = [];
         foreach ($this->client->getChannelApi()->all() as $channel) {
@@ -127,7 +120,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $channels;
     }
 
-    public function getCategories(int $pageSize): \Iterator|ArrayIterator
+    public function getCategories(int $pageSize): iterable
     {
         $categoryTreeChannel = null;
         $akeneoChannel = $this->transportEntity->getAkeneoActiveChannel();
@@ -163,9 +156,6 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $akeneoTree;
     }
 
-    /**
-     * @return \Iterator
-     */
     public function getAttributeFamilies(): AttributeFamilyIterator
     {
         return new AttributeFamilyIterator(
@@ -290,27 +280,24 @@ class AkeneoTransport implements AkeneoTransportInterface
     }
 
     #[\Override]
-    public function getSettingsFormType()
+    public function getSettingsFormType():string
     {
         return AkeneoSettingsType::class;
     }
 
     #[\Override]
-    public function getSettingsEntityFQCN()
+    public function getSettingsEntityFQCN(): string
     {
         return AkeneoSettings::class;
     }
 
     #[\Override]
-    public function getLabel()
+    public function getLabel(): string
     {
         return 'oro.akeneo.integration.settings.label';
     }
 
-    /**
-     * @return AttributeIterator
-     */
-    public function getAttributes(int $pageSize)
+    public function getAttributes(int $pageSize): AttributeIterator
     {
         $attributeFilter = $this->getAttributeFilter();
 
@@ -334,12 +321,12 @@ class AkeneoTransport implements AkeneoTransportInterface
 
         $this->initFamilies();
 
-        $familtyAttributes = [];
+        $familyAttributes = [];
         foreach ($this->families as $family) {
-            $familtyAttributes = array_unique(array_merge($familtyAttributes, $family['attributes'] ?? []));
+            $familyAttributes = array_unique(array_merge($familyAttributes, $family['attributes'] ?? []));
         }
 
-        return $familtyAttributes;
+        return $familyAttributes;
     }
 
     public function downloadAndSaveMediaFile(string $code): void
@@ -474,12 +461,12 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
     }
 
-    protected function initAttributesList()
+    protected function initAttributesList(): void
     {
         if (empty($this->attributes)) {
             $attributeFilter = $this->getAttributeFilter();
             foreach ($this->client->getAttributeApi()->all(self::PAGE_SIZE) as $attribute) {
-                if ($attributeFilter && !in_array($attribute['code'], $attributeFilter)) {
+                if ($attributeFilter && !in_array($attribute['code'], $attributeFilter, true)) {
                     continue;
                 }
 
@@ -488,7 +475,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
     }
 
-    protected function initFamilyVariants()
+    protected function initFamilyVariants(): void
     {
         if (!empty($this->familyVariants)) {
             return;
@@ -504,7 +491,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
     }
 
-    protected function initFamilies()
+    protected function initFamilies(): void
     {
         if (!empty($this->families)) {
             return;
@@ -515,7 +502,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
     }
 
-    protected function initMeasureFamilies()
+    protected function initMeasureFamilies(): void
     {
         if (!empty($this->measureFamilies)) {
             return;

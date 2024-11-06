@@ -5,21 +5,12 @@ namespace Creativestyle\Bundle\AkeneoBundle\EventListener;
 use Doctrine\ORM\Event\OnFlushEventArgs;
 use Oro\Bundle\EntityConfigBundle\Attribute\Entity\AttributeGroupRelation;
 use Oro\Bundle\EntityConfigBundle\EventListener\DeletedAttributeRelationListener as BaseListener;
-use Oro\Bundle\EntityConfigBundle\Provider\DeletedAttributeProviderInterface;
 use Oro\Component\MessageQueue\Client\Message;
 use Oro\Component\MessageQueue\Client\MessagePriority;
-use Oro\Component\MessageQueue\Client\MessageProducerInterface;
 
 class DeletedAttributeRelationListener extends BaseListener
 {
     protected array $deletedAttributesNames = [];
-
-    public function __construct(
-        MessageProducerInterface $messageProducer,
-        DeletedAttributeProviderInterface $deletedAttributeProvider
-    ) {
-        parent::__construct($messageProducer, $deletedAttributeProvider);
-    }
 
     public function onFlush(OnFlushEventArgs $eventArgs): void
     {
@@ -41,7 +32,6 @@ class DeletedAttributeRelationListener extends BaseListener
         foreach ($this->deletedAttributes as $attributeFamilyId => $attributeIds) {
             $attributes = $this->deletedAttributeProvider->getAttributesByIds($attributeIds);
             foreach ($attributes as &$attribute) {
-                // @TODO stevensonkuo make sure here we don't need inflector.
                 $attribute = $this->getAttributeName($attribute);
             }
             unset($attribute);

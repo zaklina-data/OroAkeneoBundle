@@ -26,7 +26,6 @@ services:
         calls:
             - [ setProtocol, [ 'gaufrette-readonly' ] ]
 
-    # @TODO stevensonkuo now the file manager for entity denormalize should set sub-directory too.
     oro_akeneo.importexport.file_manager_writable:
         parent: oro_gaufrette.file_manager
         arguments:

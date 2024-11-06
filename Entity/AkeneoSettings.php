@@ -89,8 +89,7 @@ class AkeneoSettings extends Transport
         cascade: ['persist'],
         fetch: 'EAGER',
         orphanRemoval: true
-    )
-    ]
+    )]
     private Collection $akeneoLocales;
 
     #[ORM\ManyToOne(targetEntity: PriceList::class)]

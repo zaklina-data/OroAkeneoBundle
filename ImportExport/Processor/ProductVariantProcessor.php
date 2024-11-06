@@ -63,7 +63,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                         ),
                         '%item%' => json_encode(
                             $context->getValue('rawItemData'),
-                            JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                            JSON_THROW_ON_ERROR|\JSON_UNESCAPED_SLASHES|\JSON_UNESCAPED_UNICODE
                         ),
                     ]
                 )
@@ -118,7 +118,7 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
                             ),
                             '%item%' => json_encode(
                                 $context->getValue('rawItemData'),
-                                JSON_THROW_ON_ERROR | \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                                JSON_THROW_ON_ERROR|\JSON_UNESCAPED_SLASHES|\JSON_UNESCAPED_UNICODE
                             ),
                         ]
                     )
@@ -208,7 +208,6 @@ class ProductVariantProcessor implements ProcessorInterface, StepExecutionAwareI
         $context->incrementUpdateCount();
         $parentProduct->setStatus(Product::STATUS_ENABLED);
 
-        // @TODO stevensonkuo check if program will run into here.
         foreach ($items as $item) {
             if (!empty($item['parent_disabled'])) {
                 $parentProduct->setStatus(Product::STATUS_DISABLED);

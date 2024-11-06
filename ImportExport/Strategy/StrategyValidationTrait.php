@@ -53,7 +53,7 @@ trait StrategyValidationTrait
         }
 
         $source = $entity;
-        if (!$entity = $this->processEntity($entity)) {
+        if (!$entity = $this->processEntity($entity, true, true, $this->context->getValue('itemData'))) {
             $this->invalidateEntity($source);
 
             return null;

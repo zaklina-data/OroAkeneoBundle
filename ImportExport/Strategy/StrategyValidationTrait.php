@@ -100,7 +100,8 @@ trait StrategyValidationTrait
             return;
         }
 
-        $em = $this->doctrineHelper->getEntityManager($entity, false);
+        $em = property_exists($this, 'doctrineHelper')
+            ? $this->doctrineHelper->getEntityManager($entity, false) : null;
         if (!$em) {
             return;
         }

@@ -82,7 +82,12 @@ class CleanupCommand extends Command implements
         $jqb
             ->select('j.id')
             ->where($jqb->expr()->in('j.status', ':statuses'))
-            ->setParameter('statuses', [Job::STATUS_SUCCESS, Job::STATUS_CANCELLED, Job::STATUS_FAILED, Job::STATUS_STALE])
+            ->setParameter('statuses', [
+                Job::STATUS_SUCCESS,
+                Job::STATUS_CANCELLED,
+                Job::STATUS_FAILED,
+                Job::STATUS_STALE
+            ])
             ->orderBy($jqb->expr()->desc('j.id'));
 
         $iterator = new BufferedIdentityQueryResultIterator($jqb->getQuery());

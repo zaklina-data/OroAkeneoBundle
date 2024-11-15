@@ -119,7 +119,7 @@ class AttributeDataConverter extends EntityFieldDataConverter
             $importedRecord['options'][$key]['translatedLabels'] = [];
             $importedRecord['options'][$key]['defaultLabel'] = $importedRecord[$optionKey];
             $optionKey = sprintf('enum.enum_options.%d.is_default', $key);
-            $importedRecord[$optionKey] = '';
+            $importedRecord[$optionKey] = 'false';
 
             foreach ($transport->getAkeneoLocales() as $akeneoLocale) {
                 foreach ($this->getLocalizations($akeneoLocale->getLocale()) as $localization) {

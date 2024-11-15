@@ -27,7 +27,7 @@ WHERE owner_user_id IS NULL
         if ($this->platform instanceof MySqlPlatform) {
             $queries->addPostQuery(
                 "UPDATE oro_attachment_file
-SET uuid = UUID();
+SET uuid = UUID()
 WHERE parent_entity_class = 'Oro\Bundle\ProductBundle\Entity\Product'
 AND parent_entity_field_name LIKE 'Akeneo%';"
             );

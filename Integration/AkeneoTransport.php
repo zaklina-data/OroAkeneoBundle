@@ -176,18 +176,6 @@ class AkeneoTransport implements AkeneoTransportInterface
             'search' => $this->akeneoSearchBuilder->getFilters($this->transportEntity->getProductFilter()),
         ];
 
-        if ($this->transportEntity->getSyncProducts() === SyncProductsDataProvider::PUBLISHED) {
-            return new ProductIterator(
-                $this->client->getPublishedProductApi()->all($pageSize, $queryParams),
-                $this->client,
-                $this->logger,
-                $this->attributes,
-                $this->familyVariants,
-                $this->measureFamilies,
-                $this->getAttributeMapping()
-            );
-        }
-
         return new ProductIterator(
             $this->client->getProductApi()->all($pageSize, $queryParams),
             $this->client,

@@ -106,20 +106,6 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 ]
             )
             ->add(
-                'syncProducts',
-                ChoiceType::class,
-                [
-                    'choices'           => $this->syncProductsDataProvider->getSyncProducts(),
-                    'choice_label'      => function ($action) {
-                        return $this->translator->trans(
-                            sprintf('oro.akeneo.integration.settings.sync_products.%s', $action)
-                        );
-                    },
-                    'label'             => 'oro.akeneo.integration.settings.sync_products.label',
-                    'required'          => true,
-                ]
-            )
-            ->add(
                 'productUnitAttribute',
                 TextType::class,
                 [

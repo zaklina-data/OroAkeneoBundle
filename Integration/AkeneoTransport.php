@@ -24,63 +24,40 @@ class AkeneoTransport implements AkeneoTransportInterface
 {
     use LoggerAwareTrait;
 
-    const PAGE_SIZE = 100;
+    private const PAGE_SIZE = 100;
 
-    private $attributes = [];
+    private array $attributes = [];
 
-    private $familyVariants = [];
+    private array $familyVariants = [];
 
-    private $families = [];
+    private array $families = [];
 
-    private $measureFamilies = [];
+    private array $measureFamilies = [];
 
-    private $attributeMapping = [];
+    private array $attributeMapping = [];
 
-    /** @var AkeneoClientFactory */
-    private $clientFactory;
+    private AkeneoPimClientInterface $client;
 
-    /** @var AkeneoPimClientInterface */
-    private $client;
-
-    /** @var CurrencyProviderInterface */
-    private $configProvider;
-
-    /** @var AkeneoSettings */
-    private $transportEntity;
-
-    /** @var AkeneoSearchBuilder */
-    private $akeneoSearchBuilder;
-
-    /** @var FileManager */
-    private $fileManager;
+    private AkeneoSettings $transportEntity;
 
     public function __construct(
-        AkeneoClientFactory $clientFactory,
-        CurrencyProviderInterface $configProvider,
-        AkeneoSearchBuilder $akeneoSearchBuilder,
-        FileManager $fileManager,
+        private AkeneoClientFactory $clientFactory,
+        private CurrencyProviderInterface $configProvider,
+        private AkeneoSearchBuilder $akeneoSearchBuilder,
+        private FileManager $fileManager,
         LoggerInterface $logger
     ) {
-        $this->clientFactory = $clientFactory;
-        $this->configProvider = $configProvider;
-        $this->akeneoSearchBuilder = $akeneoSearchBuilder;
-        $this->fileManager = $fileManager;
         $this->logger = $logger;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function init(Transport $transportEntity, $tokensEnabled = true)
+    #[\Override]
+    public function init(Transport $transportEntity, $tokensEnabled = true): void
     {
         $this->client = $this->clientFactory->getInstance($transportEntity, $tokensEnabled);
         $this->transportEntity = $transportEntity;
     }
 
-    /**
-     * @return array
-     */
-    public function getCurrencies()
+    public function getCurrencies(): array
     {
         $currencies = [];
 
@@ -95,10 +72,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $currencies;
     }
 
-    /**
-     * @return array
-     */
-    public function getMergedCurrencies()
+    public function getMergedCurrencies(): array
     {
         $currencies = [];
         $oroCurrencies = $this->configProvider->getCurrencies();
@@ -107,7 +81,7 @@ class AkeneoTransport implements AkeneoTransportInterface
             if (false === $currency['enabled']) {
                 continue;
             }
-            if (in_array($currency['code'], $oroCurrencies)) {
+            if (in_array($currency['code'], $oroCurrencies, true)) {
                 $currencies[$currency['code']] = $currency['code'];
             }
         }
@@ -115,15 +89,12 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $currencies;
     }
 
-    public function setConfigProvider(CurrencyProviderInterface $configProvider)
+    public function setConfigProvider(CurrencyProviderInterface $configProvider): void
     {
         $this->configProvider = $configProvider;
     }
 
-    /**
-     * @return array
-     */
-    public function getLocales()
+    public function getLocales(): array
     {
         $locales = [];
 
@@ -139,10 +110,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $locales;
     }
 
-    /**
-     * @return array
-     */
-    public function getChannels()
+    public function getChannels(): array
     {
         $channels = [];
         foreach ($this->client->getChannelApi()->all() as $channel) {
@@ -152,17 +120,15 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $channels;
     }
 
-    /**
-     * @return \Iterator
-     */
-    public function getCategories(int $pageSize)
+    public function getCategories(int $pageSize): iterable
     {
         $categoryTreeChannel = null;
         $akeneoChannel = $this->transportEntity->getAkeneoActiveChannel();
 
         if (!empty($akeneoChannel)) {
             foreach ($this->client->getChannelApi()->all() as $channel) {
-                $categoryTreeChannel = ($channel['code'] == $akeneoChannel && !empty($channel['category_tree'])) ? $channel['category_tree'] : null;
+                $categoryTreeChannel = ($channel['code'] === $akeneoChannel && !empty($channel['category_tree']))
+                    ? $channel['category_tree'] : null;
 
                 if (null !== $categoryTreeChannel) {
                     break;
@@ -178,7 +144,9 @@ class AkeneoTransport implements AkeneoTransportInterface
         $akeneoTree = new \ArrayIterator([], \ArrayIterator::STD_PROP_LIST);
 
         foreach ($this->client->getCategoryApi()->all($pageSize) as $category) {
-            if ($category['code'] == $categoryTreeChannel || in_array($category['parent'], $parentCategory)) {
+            if ($category['code'] === $categoryTreeChannel
+                || in_array($category['parent'], $parentCategory, true)
+            ) {
                 $parentCategory[] = $category['code'];
                 $akeneoTree->append($category);
             }
@@ -188,10 +156,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         return $akeneoTree;
     }
 
-    /**
-     * @return \Iterator
-     */
-    public function getAttributeFamilies()
+    public function getAttributeFamilies(): AttributeFamilyIterator
     {
         return new AttributeFamilyIterator(
             $this->client->getFamilyApi()->all(self::PAGE_SIZE),
@@ -200,12 +165,8 @@ class AkeneoTransport implements AkeneoTransportInterface
         );
     }
 
-    /**
-     * {@inheritdoc}
-     *
-     * @return \Iterator
-     */
-    public function getProducts(int $pageSize)
+    #[\Override]
+    public function getProducts(int $pageSize): \Iterator
     {
         $this->initAttributesList();
         $this->initMeasureFamilies();
@@ -214,18 +175,6 @@ class AkeneoTransport implements AkeneoTransportInterface
             'scope' => $this->transportEntity->getAkeneoActiveChannel(),
             'search' => $this->akeneoSearchBuilder->getFilters($this->transportEntity->getProductFilter()),
         ];
-
-        if ($this->transportEntity->getSyncProducts() === SyncProductsDataProvider::PUBLISHED) {
-            return new ProductIterator(
-                $this->client->getPublishedProductApi()->all($pageSize, $queryParams),
-                $this->client,
-                $this->logger,
-                $this->attributes,
-                $this->familyVariants,
-                $this->measureFamilies,
-                $this->getAttributeMapping()
-            );
-        }
 
         return new ProductIterator(
             $this->client->getProductApi()->all($pageSize, $queryParams),
@@ -272,10 +221,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         );
     }
 
-    /**
-     * @return \Iterator
-     */
-    public function getProductModels(int $pageSize)
+    public function getProductModels(int $pageSize): \Iterator
     {
         $this->initAttributesList();
         $this->initFamilyVariants();
@@ -321,34 +267,25 @@ class AkeneoTransport implements AkeneoTransportInterface
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getSettingsFormType()
+    #[\Override]
+    public function getSettingsFormType():string
     {
         return AkeneoSettingsType::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getSettingsEntityFQCN()
+    #[\Override]
+    public function getSettingsEntityFQCN(): string
     {
         return AkeneoSettings::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getLabel()
+    #[\Override]
+    public function getLabel(): string
     {
         return 'oro.akeneo.integration.settings.label';
     }
 
-    /**
-     * @return AttributeIterator
-     */
-    public function getAttributes(int $pageSize)
+    public function getAttributes(int $pageSize): AttributeIterator
     {
         $attributeFilter = $this->getAttributeFilter();
 
@@ -372,12 +309,12 @@ class AkeneoTransport implements AkeneoTransportInterface
 
         $this->initFamilies();
 
-        $familtyAttributes = [];
+        $familyAttributes = [];
         foreach ($this->families as $family) {
-            $familtyAttributes = array_unique(array_merge($familtyAttributes, $family['attributes'] ?? []));
+            $familyAttributes = array_unique(array_merge($familyAttributes, $family['attributes'] ?? []));
         }
 
-        return $familtyAttributes;
+        return $familyAttributes;
     }
 
     public function downloadAndSaveMediaFile(string $code): void
@@ -512,12 +449,12 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
     }
 
-    protected function initAttributesList()
+    protected function initAttributesList(): void
     {
         if (empty($this->attributes)) {
             $attributeFilter = $this->getAttributeFilter();
             foreach ($this->client->getAttributeApi()->all(self::PAGE_SIZE) as $attribute) {
-                if ($attributeFilter && !in_array($attribute['code'], $attributeFilter)) {
+                if ($attributeFilter && !in_array($attribute['code'], $attributeFilter, true)) {
                     continue;
                 }
 
@@ -526,7 +463,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
     }
 
-    protected function initFamilyVariants()
+    protected function initFamilyVariants(): void
     {
         if (!empty($this->familyVariants)) {
             return;
@@ -542,7 +479,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
     }
 
-    protected function initFamilies()
+    protected function initFamilies(): void
     {
         if (!empty($this->families)) {
             return;
@@ -553,7 +490,7 @@ class AkeneoTransport implements AkeneoTransportInterface
         }
     }
 
-    protected function initMeasureFamilies()
+    protected function initMeasureFamilies(): void
     {
         if (!empty($this->measureFamilies)) {
             return;

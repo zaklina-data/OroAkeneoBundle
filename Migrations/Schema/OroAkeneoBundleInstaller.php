@@ -42,17 +42,13 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         ],
     ];
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getMigrationVersion()
+    #[\Override]
+    public function getMigrationVersion(): string
     {
         return 'v1_16';
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function up(Schema $schema, QueryBag $queries)
     {
         /* Tables generation */
@@ -67,6 +63,7 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         $this->updateBrandTable($schema);
         $this->updateAttributeFamilyTable($schema);
         $this->updateAttributeGroupTable($schema);
+        $this->updateAttachmentTable($schema);
     }
 
     /**
@@ -286,9 +283,15 @@ class OroAkeneoBundleInstaller implements Installation, ExtendExtensionAwareInte
         );
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    protected function updateAttachmentTable(Schema $schema): void
+    {
+        $table = $schema->getTable('oro_attachment_file');
+
+        $table->getColumn('parent_entity_class')->setLength(255);
+        $table->addIndex(['parent_entity_class', 'parent_entity_id'], 'oro_akeneo_file_parent_index');
+    }
+
+    #[\Override]
     public function setExtendExtension(ExtendExtension $extendExtension)
     {
         $this->extendExtension = $extendExtension;

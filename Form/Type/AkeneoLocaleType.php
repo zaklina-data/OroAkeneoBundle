@@ -24,21 +24,12 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    const BLOCK_PREFIX = 'oro_akeneo_locale';
+    private const BLOCK_PREFIX = 'oro_akeneo_locale';
 
-    /**
-     * @var array
-     */
-    public $codes = [];
+    public array $codes = [];
 
-    /**
-     * @var LocalizationManager
-     */
-    private $localizationManager;
-
-    public function __construct(LocalizationManager $localizationManager)
+    public function __construct(private LocalizationManager $localizationManager)
     {
-        $this->localizationManager = $localizationManager;
     }
 
     /**
@@ -46,7 +37,7 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
      * @throws InvalidOptionsException
      * @throws MissingOptionsException
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $this->codes = $options['parent_data'] ?? [];
 
@@ -56,7 +47,9 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices' => array_combine($this->codes, $this->codes),
-                    'choice_label' => function ($choice) { return Locales::getName($choice); },
+                    'choice_label' => function ($choice) {
+                        return Locales::getName($choice);
+                    },
                     'label' => false,
                     'constraints' => [
                         new NotBlank(),
@@ -79,7 +72,7 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
         $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit']);
     }
 
-    private function getChoices()
+    private function getChoices(): array
     {
         $choices = [];
         $localizations = $this->localizationManager->getLocalizations();
@@ -90,7 +83,7 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
         return $choices;
     }
 
-    public function onPreSetData(FormEvent $event)
+    public function onPreSetData(FormEvent $event): void
     {
         $form = $event->getForm();
 
@@ -107,12 +100,14 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
                 ChoiceType::class,
                 [
                     'choices' => array_combine($this->codes, $this->codes),
-                    'choice_label' => function ($choice) { return Locales::getName($choice); },
+                    'choice_label' => function ($choice) {
+                        return Locales::getName($choice);
+                    },
                 ]
             );
     }
 
-    public function onPreSubmit(FormEvent $event)
+    public function onPreSubmit(FormEvent $event): void
     {
         try {
             $transportData = $event->getData();
@@ -124,7 +119,9 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
                     ChoiceType::class,
                     [
                         'choices' => array_combine($this->codes, $this->codes),
-                        'choice_label' => function ($choice) { return Locales::getName($choice); },
+                        'choice_label' => function ($choice) {
+                            return Locales::getName($choice);
+                        },
                     ]
                 );
 
@@ -137,7 +134,7 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
     /**
      * @throws AccessException
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(
             [
@@ -147,9 +144,6 @@ class AkeneoLocaleType extends AbstractType implements LoggerAwareInterface
         );
     }
 
-    /**
-     * @return string
-     */
     public function getBlockPrefix(): string
     {
         return self::BLOCK_PREFIX;

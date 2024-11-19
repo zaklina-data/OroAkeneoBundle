@@ -8,12 +8,10 @@ use Oro\Bundle\ImportExportBundle\Serializer\Normalizer\ConfigurableEntityNormal
 
 class AttributeRelationNormalizer extends ConfigurableEntityNormalizer
 {
-    const FIELD_NAME = 'attributeRelations';
+    private const FIELD_NAME = 'attributeRelations';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function denormalize($data, $class, $format = null, array $context = [])
+    #[\Override]
+    public function denormalize(mixed $data, string $class, string $format = null, array $context = [])
     {
         $result = parent::denormalize($data, $class, $format, $context);
 

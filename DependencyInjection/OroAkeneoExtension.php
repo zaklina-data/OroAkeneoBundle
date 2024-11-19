@@ -14,12 +14,10 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
  */
 class OroAkeneoExtension extends Extension
 {
-    const ALIAS = 'oro_akeneo';
+    private const ALIAS = 'oro_akeneo';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function load(array $configs, ContainerBuilder $container)
+    #[\Override]
+    public function load(array $configs, ContainerBuilder $container): void
     {
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('commands.yml');
@@ -30,9 +28,7 @@ class OroAkeneoExtension extends Extension
         $loader->load('form_types.yml');
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getAlias(): string
     {
         return self::ALIAS;

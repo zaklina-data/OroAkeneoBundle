@@ -37,9 +37,7 @@ class ProductIterator extends AbstractIterator
         $this->attributeMapping = $attributeMapping;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function doCurrent()
     {
         $product = $this->resourceCursor->current();

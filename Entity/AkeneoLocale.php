@@ -2,46 +2,34 @@
 
 namespace Creativestyle\Bundle\AkeneoBundle\Entity;
 
+use Creativestyle\Bundle\AkeneoBundle\Entity\Repository\AkeneoLocaleRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-
-#[ORM\Entity(repositoryClass: \Creativestyle\Bundle\AkeneoBundle\Entity\Repository\AkeneoLocaleRepository::class)]
+#[ORM\Entity(repositoryClass: AkeneoLocaleRepository::class)]
 #[ORM\Table(name: 'oro_akeneo_locale')]
 class AkeneoLocale
 {
-    /**
-     * @var string
-     */
     #[ORM\Column(name: 'locale', type: 'string', length: 10, nullable: true)]
-    protected $locale;
-    /**
-     * @var int
-     */
+    protected ?string $locale = null;
+
     #[ORM\Id]
     #[ORM\Column(name: 'id', type: 'integer')]
     #[ORM\GeneratedValue(strategy: 'AUTO')]
-    private $id;
-    /**
-     * @var string
-     */
-    #[ORM\Column(name: 'code', type: 'string', length: 200)]
-    private $code;
-    #[ORM\ManyToOne(targetEntity: \Creativestyle\Bundle\AkeneoBundle\Entity\AkeneoSettings::class, inversedBy: 'akeneoLocales')]
-    #[ORM\JoinColumn(referencedColumnName: 'id')]
-    private $akeneoSettings;
+    private ?int $id;
 
-    /**
-     * @return int
-     */
-    public function getId()
+    #[ORM\Column(name: 'code', type: 'string', length: 200)]
+    private string $code = '';
+
+    #[ORM\ManyToOne(targetEntity: AkeneoSettings::class, inversedBy: 'akeneoLocales')]
+    #[ORM\JoinColumn(referencedColumnName: 'id')]
+    private ?AkeneoSettings $akeneoSettings = null;
+
+    public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return string
-     */
-    public function getCode()
+    public function getCode(): string
     {
         return $this->code;
     }
@@ -53,20 +41,12 @@ class AkeneoLocale
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getLocale()
+    public function getLocale(): ?string
     {
         return $this->locale;
     }
 
-    /**
-     * @param string $locale
-     *
-     * @return $this
-     */
-    public function setLocale($locale = null): self
+    public function setLocale(string $locale = null): self
     {
         $this->locale = $locale;
 
@@ -75,10 +55,8 @@ class AkeneoLocale
 
     /**
      * Get $akeneoSettings.
-     *
-     * @return \Doctrine\Common\Collections\Collection
      */
-    public function getAkeneoSettings()
+    public function getAkeneoSettings(): AkeneoSettings
     {
         return $this->akeneoSettings;
     }

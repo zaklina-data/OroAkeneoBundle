@@ -7,10 +7,8 @@ use Oro\Bundle\BatchBundle\Step\ItemStep as BaseItemStep;
 
 class ItemStep extends BaseItemStep
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function doExecute(StepExecution $stepExecution)
+    #[\Override]
+    public function doExecute(StepExecution $stepExecution): void
     {
         $this->initializeStepElements($stepExecution);
 

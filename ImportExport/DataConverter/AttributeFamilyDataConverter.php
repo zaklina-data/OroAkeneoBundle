@@ -18,39 +18,31 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
     use AkeneoIntegrationTrait;
     use LocalizationAwareTrait;
 
-    /** @var array */
-    protected $fieldMapping = [];
+    protected array $fieldMapping = [];
 
-    /**
-     * @var EntityConfigManager
-     */
-    protected $entityConfigManager;
+    protected EntityConfigManager $entityConfigManager;
 
-    /** @var DoctrineHelper */
-    protected $doctrineHelper;
+    protected DoctrineHelper $doctrineHelper;
 
-    /** @var ContextInterface */
-    protected $context;
+    protected ContextInterface $context;
 
-    public function setImportExportContext(ContextInterface $context)
+    public function setImportExportContext(ContextInterface $context): void
     {
         $this->context = $context;
     }
 
-    public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper): void
     {
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    public function setEntityConfigManager(EntityConfigManager $entityConfigManager)
+    public function setEntityConfigManager(EntityConfigManager $entityConfigManager): void
     {
         $this->entityConfigManager = $entityConfigManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
+    #[\Override]
+    public function convertToImportFormat(array $importedRecord, $skipNullValues = true): array
     {
         $importedRecord['code'] = AttributeFamilyCodeGenerator::generate($importedRecord['code']);
         $importedRecord['entityClass'] = Product::class;
@@ -90,15 +82,14 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
                 );
                 if ($entityConfigFieldId) {
                     $group['attributeRelations'][] = ['entityConfigFieldId' => $entityConfigFieldId];
-
-                    continue;
                 }
             }
         }
+        unset($group);
 
         $importedRecord['groups'] = array_filter(
             $importedRecord['groups'],
-            function ($group) {
+            static function ($group) {
                 return !empty($group['attributeRelations']);
             }
         );
@@ -132,7 +123,7 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
     /**
      * Set labels with locales mapping from settings.
      */
-    private function setLabels(array &$importedRecord)
+    private function setLabels(array &$importedRecord): void
     {
         $labels = $importedRecord['labels'];
 
@@ -161,10 +152,8 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getHeaderConversionRules()
+    #[\Override]
+    protected function getHeaderConversionRules(): array
     {
         return [
             'labels' => 'labels',
@@ -173,10 +162,8 @@ class AttributeFamilyDataConverter extends LocalizedFallbackValueAwareDataConver
         ];
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getBackendHeader()
+    #[\Override]
+    protected function getBackendHeader(): array
     {
         throw new \Exception('Normalization is not implemented!');
     }

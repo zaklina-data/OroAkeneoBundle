@@ -3,6 +3,7 @@
 namespace Creativestyle\Bundle\AkeneoBundle\ImportExport\Strategy;
 
 use Doctrine\ORM\ORMInvalidArgumentException;
+use Oro\Bundle\EntityExtendBundle\EntityPropertyInfo;
 
 /**
  * @method assertEnvironment
@@ -16,7 +17,7 @@ use Doctrine\ORM\ORMInvalidArgumentException;
  * @property $context
  * @property $doctrineHelper
  *
- * @internal Append proper validation logic to stategies
+ * @internal Append proper validation logic to strategies
  * @deprecated BAP-20243
  */
 trait StrategyValidationTrait
@@ -25,9 +26,15 @@ trait StrategyValidationTrait
     {
         $this->assertEnvironment($entity);
 
-        $this->cachedEntities = [];
-        $this->processingEntity = null;
-        if (\Oro\Bundle\EntityExtendBundle\EntityPropertyInfo::propertyExists($this, 'relatedEntityStateHelper') && $this->relatedEntityStateHelper) {
+        if (property_exists($this, 'cachedEntities')) {
+            $this->cachedEntities = [];
+        }
+        if (property_exists($this, 'processingEntity')) {
+            $this->processingEntity = null;
+        }
+        if (property_exists($this, 'relatedEntityStateHelper')
+            && EntityPropertyInfo::propertyExists($this, 'relatedEntityStateHelper')
+        ) {
             $this->relatedEntityStateHelper->clear();
         }
 
@@ -62,7 +69,7 @@ trait StrategyValidationTrait
         return $this->validateAndUpdateContext($entity);
     }
 
-    protected function processValidationErrors($entity, array $validationErrors)
+    protected function processValidationErrors($entity, array $validationErrors): void
     {
         $this->context->incrementErrorEntriesCount();
         foreach ($validationErrors as $validationError) {
@@ -73,7 +80,7 @@ trait StrategyValidationTrait
                         '%error%' => $validationError,
                         '%item%' => json_encode(
                             $this->context->getValue('rawItemData'),
-                            \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                            JSON_THROW_ON_ERROR|\JSON_UNESCAPED_SLASHES|\JSON_UNESCAPED_UNICODE
                         ),
                     ]
                 )
@@ -83,9 +90,9 @@ trait StrategyValidationTrait
         $this->invalidateEntity($entity);
     }
 
-    protected function invalidateEntity($entity)
+    protected function invalidateEntity($entity): void
     {
-        if (\Oro\Bundle\EntityExtendBundle\EntityPropertyInfo::propertyExists($this, 'relatedEntityStateHelper') && $this->relatedEntityStateHelper) {
+        if (EntityPropertyInfo::propertyExists($this, 'relatedEntityStateHelper') && $this->relatedEntityStateHelper) {
             $this->relatedEntityStateHelper->revertRelations();
         }
 
@@ -93,7 +100,8 @@ trait StrategyValidationTrait
             return;
         }
 
-        $em = $this->doctrineHelper->getEntityManager($entity, false);
+        $em = property_exists($this, 'doctrineHelper')
+            ? $this->doctrineHelper->getEntityManager($entity, false) : null;
         if (!$em) {
             return;
         }
@@ -105,7 +113,7 @@ trait StrategyValidationTrait
         }
     }
 
-    protected function validateBeforeProcess($entity)
+    protected function validateBeforeProcess($entity): ?object
     {
         $validationErrors = $this->strategyHelper->validateEntity($entity, null, ['import_field_type_akeneo']);
         if ($validationErrors) {
@@ -118,7 +126,7 @@ trait StrategyValidationTrait
                             '%error%' => $validationError,
                             '%item%' => json_encode(
                                 $this->context->getValue('rawItemData'),
-                                \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                                JSON_THROW_ON_ERROR|\JSON_UNESCAPED_SLASHES|\JSON_UNESCAPED_UNICODE
                             ),
                         ]
                     )

@@ -12,18 +12,12 @@ class AttributeFamilyStatusProcessor implements ProcessorInterface, MemoryCacheP
 {
     use MemoryCacheProviderAwareTrait;
 
-    /** @var ManagerRegistry */
-    private $registry;
-
-    public function __construct(ManagerRegistry $registry)
+    public function __construct(private ManagerRegistry $registry)
     {
-        $this->registry = $registry;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function process($item)
+    #[\Override]
+    public function process(mixed $item): ?AttributeFamily
     {
         if (!$item instanceof AttributeFamily) {
             return null;

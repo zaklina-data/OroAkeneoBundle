@@ -23,9 +23,7 @@ class ChannelTypeExtension extends AbstractTypeExtension
         'configurable_product',
     ];
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public static function getExtendedTypes(): iterable
     {
         return [ChannelType::class];

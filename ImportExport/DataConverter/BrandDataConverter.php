@@ -23,46 +23,29 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
     use AkeneoIntegrationTrait;
     use LocalizationAwareTrait;
 
-    private $mappedAttributes = [];
+    private array $mappedAttributes = [];
 
-    /** @var DoctrineHelper */
-    private $doctrineHelper;
+    protected ContextInterface $context;
 
-    /** @var FieldHelper */
-    private $fieldHelper;
-
-    /** @var ConfigManager */
-    private $configManager;
-
-    /** @var EntityConfigManager */
-    private $entityConfigManager;
-
-    /** @var ContextInterface */
-    protected $context;
-
-    public function setImportExportContext(ContextInterface $context)
+    public function setImportExportContext(ContextInterface $context): void
     {
         $this->context = $context;
     }
 
     public function __construct(
-        DoctrineHelper $doctrineHelper,
-        FieldHelper $fieldHelper,
-        EntityConfigManager $entityConfigManager,
-        ConfigManager $configManager
+        private DoctrineHelper $doctrineHelper,
+        private FieldHelper $fieldHelper,
+        private EntityConfigManager $entityConfigManager,
+        private ConfigManager $configManager
     ) {
-        $this->doctrineHelper = $doctrineHelper;
-        $this->fieldHelper = $fieldHelper;
-        $this->entityConfigManager = $entityConfigManager;
-        $this->configManager = $configManager;
     }
 
-    public function convertToExportFormat(array $exportedRecord, $skipNullValues = true)
+    public function convertToExportFormat(array $exportedRecord, $skipNullValues = true): array
     {
         return [];
     }
 
-    public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
+    public function convertToImportFormat(array $importedRecord, $skipNullValues = true): array
     {
         $record = [];
         $fields = $this->fieldHelper->getEntityFields(Brand::class, EntityFieldProvider::OPTION_WITH_RELATIONS);
@@ -106,7 +89,7 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
         }
     }
 
-    private function processValue(array &$importedRecord, array $field, array $value)
+    private function processValue(array &$importedRecord, array $field, array $value): void
     {
         $importExportProvider = $this->entityConfigManager->getProvider('importexport');
         $importExportConfig = $importExportProvider->getConfig(Brand::class, $field['name']);
@@ -133,14 +116,10 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
                 $importedRecord[$field['name']] = $this->processMultiEnumType($value);
                 break;
             case 'file':
-                $importedRecord[$field['name']] = $this->processFileType($value);
-                break;
             case 'image':
                 $importedRecord[$field['name']] = $this->processFileType($value);
                 break;
             case 'multiFile':
-                $importedRecord[$field['name']] = $this->processFileTypes($value);
-                break;
             case 'multiImage':
                 $importedRecord[$field['name']] = $this->processFileTypes($value);
                 break;
@@ -208,8 +187,9 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
         $result = [];
 
         foreach ($value as $item) {
-            $ids = array_merge($ids, $item['data']);
+            $ids[] = $item['data'];
         }
+        $ids = array_unique(...$ids);
 
         foreach (array_unique($ids) as $data) {
             $result[] = [
@@ -263,7 +243,7 @@ class BrandDataConverter implements DataConverterInterface, ContextAwareInterfac
         }
 
         $brandMappings = trim(
-            $this->getTransport()->getAkeneoBrandMapping() ?? AkeneoSettings::DEFAULT_BRAND_MAPPING,
+            $this->getTransport()?->getAkeneoBrandMapping() ?? AkeneoSettings::DEFAULT_BRAND_MAPPING,
             ';:'
         );
 

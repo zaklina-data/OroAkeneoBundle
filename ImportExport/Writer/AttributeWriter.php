@@ -14,6 +14,7 @@ use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\EntityConfigBundle\Attribute\AttributeTypeRegistry;
 use Oro\Bundle\EntityConfigBundle\Entity\FieldConfigModel;
 use Oro\Bundle\EntityConfigBundle\ImportExport\Writer\AttributeWriter as BaseAttributeWriter;
+use Oro\Bundle\EntityConfigProBundle\Attribute\AttributeConfigurationProvider;
 use Oro\Bundle\EntityExtendBundle\Entity\EnumValueTranslation;
 use Oro\Bundle\EntityExtendBundle\EntityConfig\ExtendScope;
 use Oro\Bundle\EntityExtendBundle\Extend\RelationType;
@@ -27,31 +28,28 @@ use Oro\Bundle\TranslationBundle\Manager\TranslationManager;
 /**
  * Import writer for product attributes.
  */
-class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareInterface, MemoryCacheProviderAwareInterface, ClosableInterface
+class AttributeWriter extends BaseAttributeWriter implements
+    StepExecutionAwareInterface,
+    MemoryCacheProviderAwareInterface,
+    ClosableInterface
 {
     use MemoryCacheProviderAwareTrait;
 
-    const ATTRIBUTE_LABELS_CONTEXT_KEY = 'attributeLabels';
-    const MAX_SIZE = 10;
-    const MAX_WIDTH = 100;
-    const MAX_HEIGHT = 100;
+    private const MAX_SIZE = 10;
+    private const MAX_WIDTH = 100;
+    private const MAX_HEIGHT = 100;
 
-    /** @var TranslationManager */
-    private $translationManager;
+    private TranslationManager $translationManager;
 
-    /** @var DoctrineHelper */
-    private $doctrineHelper;
+    private DoctrineHelper $doctrineHelper;
 
-    /** @var AttributeTypeRegistry */
-    private $attributeTypeRegistry;
+    private AttributeTypeRegistry $attributeTypeRegistry;
 
-    /** @var StepExecution */
-    private $stepExecution;
+    private StepExecution $stepExecution;
 
-    /** @var int */
-    private $organizationId;
+    private ?int $organizationId = null;
 
-    public function close()
+    public function close(): void
     {
         $this->organizationId = null;
     }
@@ -66,31 +64,30 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
         $this->attributeTypeRegistry = $attributeTypeRegistry;
     }
 
-    public function setTranslationManager(TranslationManager $translationManager)
+    public function setTranslationManager(TranslationManager $translationManager): void
     {
         $this->translationManager = $translationManager;
     }
 
-    public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper): void
     {
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    public function setStepExecution(StepExecution $stepExecution)
+    public function setStepExecution(StepExecution $stepExecution): void
     {
         $this->stepExecution = $stepExecution;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function write(array $items)
+    #[\Override]
+    public function write(array $items): void
     {
         $translations = [];
 
         foreach ($items as $item) {
-            $translations = array_merge($translations, $this->writeItem($item));
+            $translations[] = $this->writeItem($item);
         }
+        $translations = array_merge(...$translations);
 
         if ($this->configManager instanceof ChangesAwareInterface && $this->configManager->hasChanges()) {
             $this->configManager->flush();
@@ -104,7 +101,7 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
     /**
      * Save attribute translations from context.
      */
-    private function saveAttributeTranslationsFromContext(array $items)
+    private function saveAttributeTranslationsFromContext(array $items): void
     {
         $provider = $this->configManager->getProvider('entity');
 
@@ -133,7 +130,7 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
     /**
      * Save option translations from context.
      */
-    private function saveOptionTranslationsFromContext(array $items)
+    private function saveOptionTranslationsFromContext(array $items): void
     {
         $provider = $this->configManager->getProvider('enum');
 
@@ -191,7 +188,7 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
      */
-    protected function setAttributeData(FieldConfigModel $fieldConfigModel)
+    protected function setAttributeData(FieldConfigModel $fieldConfigModel): void
     {
         $extendProvider = $this->configManager->getProvider('extend');
         $importExportProvider = $this->configManager->getProvider('importexport');
@@ -203,7 +200,7 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
         $className = $fieldConfigModel->getEntity()->getClassName();
         $fieldName = $fieldConfigModel->getFieldName();
 
-        $sourceName = $this->memoryCacheProvider->get('attribute_fieldNameMapping_' . $fieldName) ?? null;
+        $sourceName = $this->memoryCacheProvider->get('attribute_fieldNameMapping_' . $fieldName);
         if (!$sourceName) {
             throw new \InvalidArgumentException(sprintf('Unknown source name for "%s::%s"', $className, $fieldName));
         }
@@ -234,7 +231,7 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
             $attributeConfig->set('enabled', false);
 
             // Differentiate OroCommerce EE from CE
-            if (class_exists('\Oro\Bundle\EntityConfigProBundle\Attribute\AttributeConfigurationProvider')) {
+            if (class_exists(AttributeConfigurationProvider::class)) {
                 $attributeConfig->set('is_global', false);
                 $attributeConfig->set('organization_id', $this->getOrganizationId());
             }
@@ -264,7 +261,7 @@ class AttributeWriter extends BaseAttributeWriter implements StepExecutionAwareI
 
         $extendConfig->set('relation_key', $relationKey);
 
-        $importedFieldType = $this->memoryCacheProvider->get('attribute_fieldTypeMapping_' . $fieldName) ?? null;
+        $importedFieldType = $this->memoryCacheProvider->get('attribute_fieldTypeMapping_' . $fieldName);
         $fieldType = $importedFieldType === 'pim_catalog_text' ? 'string' : 'text';
 
         $extendConfig->set('target_title', [$fieldType]);

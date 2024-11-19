@@ -12,35 +12,23 @@ use Oro\Bundle\IntegrationBundle\Entity\Channel;
  */
 class SchemaUpdateFilter
 {
-    const ACTION_NAME = 'oro.entity_extend.entity_config.extend.field.layout_action.update_schema';
-
-    /**
-     * @var ConfigManager
-     */
-    private $configManager;
-
-    /**
-     * @var EntityConfigProviderHelper
-     */
-    private $entityConfigProviderHelper;
+    private const ACTION_NAME = 'oro.entity_extend.entity_config.extend.field.layout_action.update_schema';
 
     /**
      * SchemaUpdateFilter constructor.
      */
-    public function __construct(ConfigManager $configManager, EntityConfigProviderHelper $entityConfigProviderHelper)
-    {
-        $this->configManager = $configManager;
-        $this->entityConfigProviderHelper = $entityConfigProviderHelper;
+    public function __construct(
+        private ConfigManager $configManager,
+        private EntityConfigProviderHelper $entityConfigProviderHelper
+    ) {
     }
 
     /**
      * Check if schema update button is applicable.
      *
      * @param object $entity
-     *
-     * @return bool
      */
-    public function isApplicable($entity, string $entityConfigModelClass)
+    public function isApplicable($entity, string $entityConfigModelClass): bool
     {
         if (false === is_a($entity, Channel::class) || AkeneoChannel::TYPE !== $entity->getType()) {
             return false;
@@ -54,12 +42,8 @@ class SchemaUpdateFilter
 
     /**
      * Check if actions array contains schema update.
-     *
-     * @param array $actions
-     *
-     * @return bool
      */
-    private function containsSchemaUpdateAction($actions)
+    private function containsSchemaUpdateAction(array $actions): bool
     {
         foreach ($actions as $action) {
             if (self::ACTION_NAME === $action['name']) {

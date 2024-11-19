@@ -10,42 +10,33 @@ use Oro\Bundle\IntegrationBundle\Entity\Channel;
 
 class OwnerStrategyEventListener
 {
-    /** @var DoctrineHelper */
-    private $doctrineHelper;
+    private ?Channel $channel = null;
 
-    /** @var DefaultOwnerHelper */
-    private $defaultOwnerHelper;
-
-    /** @var Channel */
-    private $channel;
-
-    public function __construct(DoctrineHelper $doctrineHelper, DefaultOwnerHelper $defaultOwnerHelper)
-    {
-        $this->doctrineHelper = $doctrineHelper;
-        $this->defaultOwnerHelper = $defaultOwnerHelper;
+    public function __construct(
+        private DoctrineHelper $doctrineHelper,
+        private DefaultOwnerHelper $defaultOwnerHelper
+    ) {
     }
 
-    public function onProcessBefore(StrategyEvent $event)
+    public function onProcessBefore(StrategyEvent $event): void
     {
-        $channel = $this->getChannel($event->getContext());
-        if (!$channel) {
+        if (!$this->channel && !$this->getChannel($event->getContext())) {
             return;
         }
 
-        $this->defaultOwnerHelper->populateChannelOwner($event->getEntity(), $channel);
+        $this->defaultOwnerHelper->populateChannelOwner($event->getEntity(), $this->channel);
     }
 
-    public function onProcessAfter(StrategyEvent $event)
+    public function onProcessAfter(StrategyEvent $event): void
     {
-        $channel = $this->getChannel($event->getContext());
-        if (!$channel) {
+        if (!$this->channel && !$this->getChannel($event->getContext())) {
             return;
         }
 
-        $this->defaultOwnerHelper->populateChannelOwner($event->getEntity(), $channel);
+        $this->defaultOwnerHelper->populateChannelOwner($event->getEntity(), $this->channel);
     }
 
-    protected function getChannel(ContextInterface $context)
+    protected function getChannel(ContextInterface $context): Channel
     {
         if (!$this->channel && $context->getOption('channel')) {
             $this->channel = $this->doctrineHelper->getEntityReference(
@@ -57,7 +48,7 @@ class OwnerStrategyEventListener
         return $this->channel;
     }
 
-    public function onClear()
+    public function onClear(): void
     {
         $this->channel = null;
     }

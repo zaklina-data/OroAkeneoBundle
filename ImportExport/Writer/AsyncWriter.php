@@ -2,10 +2,10 @@
 
 namespace Creativestyle\Bundle\AkeneoBundle\ImportExport\Writer;
 
+use Creativestyle\Bundle\AkeneoBundle\Async\Topic\ImportProductsTopic;
+use Creativestyle\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager;
 use Doctrine\DBAL\Platforms\MySqlPlatform;
 use Doctrine\DBAL\Types\Types;
-use Creativestyle\Bundle\AkeneoBundle\Async\Topics;
-use Creativestyle\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager;
 use Oro\Bundle\BatchBundle\Entity\StepExecution;
 use Oro\Bundle\BatchBundle\Item\ItemWriterInterface;
 use Oro\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
@@ -27,37 +27,19 @@ class AsyncWriter implements
 {
     use MemoryCacheProviderAwareTrait;
 
-    /** @var MessageProducerInterface * */
-    private $messageProducer;
+    private StepExecution $stepExecution;
 
-    /** @var StepExecution */
-    private $stepExecution;
-
-    /** @var int */
-    private $size = 0;
-
-    /** @var DoctrineHelper */
-    private $doctrineHelper;
-
-    /** @var OptionalListenerManager */
-    private $optionalListenerManager;
-
-    /** @var AdditionalOptionalListenerManager */
-    private $additionalOptionalListenerManager;
+    private int $size = 0;
 
     public function __construct(
-        MessageProducerInterface $messageProducer,
-        DoctrineHelper $doctrineHelper,
-        OptionalListenerManager $optionalListenerManager,
-        AdditionalOptionalListenerManager $additionalOptionalListenerManager
+        private MessageProducerInterface $messageProducer,
+        private DoctrineHelper $doctrineHelper,
+        private OptionalListenerManager $optionalListenerManager,
+        private AdditionalOptionalListenerManager $additionalOptionalListenerManager
     ) {
-        $this->messageProducer = $messageProducer;
-        $this->doctrineHelper = $doctrineHelper;
-        $this->optionalListenerManager = $optionalListenerManager;
-        $this->additionalOptionalListenerManager = $additionalOptionalListenerManager;
     }
 
-    public function initialize()
+    public function initialize(): void
     {
         $this->size = 0;
 
@@ -65,7 +47,7 @@ class AsyncWriter implements
         $this->optionalListenerManager->disableListeners($this->optionalListenerManager->getListeners());
     }
 
-    public function write(array $items)
+    public function write(array $items): void
     {
         $channelId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('channel');
 
@@ -128,7 +110,7 @@ class AsyncWriter implements
     private function sendMessage(int $channelId, int $jobId, bool $incrementedRead = false): void
     {
         $this->messageProducer->send(
-            \Creativestyle\Bundle\AkeneoBundle\Async\Topic\ImportProductsTopic::getName(),
+            ImportProductsTopic::getName(),
             new Message(
                 [
                     'integrationId' => $channelId,
@@ -148,7 +130,7 @@ class AsyncWriter implements
 
     private function getRootJob(): ?int
     {
-        $rootJobId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('rootJobId') ?? null;
+        $rootJobId = $this->stepExecution->getJobExecution()->getExecutionContext()->get('rootJobId');
         if (!$rootJobId) {
             throw new \InvalidArgumentException('Root job id is empty');
         }
@@ -156,7 +138,7 @@ class AsyncWriter implements
         return (int)$rootJobId;
     }
 
-    public function flush()
+    public function flush(): void
     {
         $this->size = 0;
 
@@ -164,7 +146,7 @@ class AsyncWriter implements
         $this->additionalOptionalListenerManager->enableListeners();
     }
 
-    public function setStepExecution(StepExecution $stepExecution)
+    public function setStepExecution(StepExecution $stepExecution): void
     {
         $this->stepExecution = $stepExecution;
     }

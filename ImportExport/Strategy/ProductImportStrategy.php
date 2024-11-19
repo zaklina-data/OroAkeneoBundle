@@ -7,6 +7,7 @@ use Oro\Bundle\EntityExtendBundle\Entity\AbstractEnumValue;
 use Oro\Bundle\EntityExtendBundle\Tools\ExtendHelper;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Oro\Bundle\ProductBundle\Entity\ProductUnitPrecision;
+use Oro\Bundle\ProductBundle\Entity\Repository\ProductRepository;
 use Oro\Bundle\ProductBundle\ImportExport\Strategy\ProductStrategy;
 
 /**
@@ -19,17 +20,15 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
     use StrategyValidationTrait;
 
     /**
-     * @var Product[]
+     * Cache existing product request in scope of a single row processing to avoid excess DB queries.
      *
-     * Cache existing product request in scope of a single row processing to avoid excess DB queries
-     */
-    private $existingProducts = [];
+     * @var Product[]
+     **/
+    private array $existingProducts = [];
 
-    public function close()
+    public function close(): void
     {
-        $this->reflectionProperties = [];
         $this->cachedEntities = [];
-
         $this->existingProducts = [];
 
         $this->databaseHelper->onClear();
@@ -37,7 +36,7 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         parent::close();
     }
 
-    protected function beforeProcessEntity($entity)
+    protected function beforeProcessEntity($entity): ?object
     {
         /** @var Product $entity */
         if ($entity->isConfigurable()) {
@@ -51,7 +50,10 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         return parent::beforeProcessEntity($entity);
     }
 
-    protected function afterProcessEntity($entity)
+    /**
+     * @return Product
+     */
+    protected function afterProcessEntity($entity): object
     {
         if ($entity instanceof Product && $entity->getCategory() && !$entity->getCategory()->getId()) {
             $entity->setCategory(null);
@@ -89,7 +91,7 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         return parent::afterProcessEntity($entity);
     }
 
-    protected function validateAndUpdateContext($entity)
+    protected function validateAndUpdateContext($entity): ?object
     {
         $validationErrors = $this->strategyHelper->validateEntity($entity);
         if ($validationErrors) {
@@ -109,35 +111,35 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         return $entity;
     }
 
-    protected function populateOwner(Product $entity)
+    protected function populateOwner(Product $entity): void
     {
     }
 
-    protected function findExistingEntity($entity, array $searchContext = [])
+    /**
+     * @param Product|ProductUnitPrecision $entity
+     */
+    protected function findExistingEntity($entity, array $searchContext = []): ?object
     {
         if ($entity instanceof Product) {
             if (array_key_exists($entity->getSku(), $this->existingProducts)) {
                 return $this->existingProducts[$entity->getSku()];
             }
 
-            $entity = $this->doctrineHelper->getEntityRepository($entity)->findByCaseInsensitive(
-                [
-                    'sku' => $entity->getSku(),
-                    'organization' => $entity->getOrganization() ?: $this->getChannel()->getOrganization(),
-                ]
-            );
-            if (is_array($entity)) {
-                $entity = array_shift($entity);
-                if ($entity instanceof Product) {
-                    $this->existingProducts[$entity->getSku()] = $entity;
+            /** @var ProductRepository $repository */
+            $repository = $this->doctrineHelper->getEntityRepository($entity);
+            $results = $repository->findByCaseInsensitive([
+                'sku' => $entity->getSku(),
+                'organization' => $entity->getOrganization() ?: $this->getChannel()->getOrganization(),
+            ]);
 
-                    return $entity;
-                }
+            $target = array_shift($results);
+            if ($target instanceof Product) {
+                $this->existingProducts[$target->getSku()] = $target;
 
-                return null;
+                return $entity;
             }
 
-            return $entity;
+            return null;
         }
 
         if ($entity instanceof ProductUnitPrecision) {
@@ -210,9 +212,7 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         return $this->findExistingEntityByIdentityFieldsTrait($entity, $searchContext);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function importExistingEntity($entity, $existingEntity, $itemData = null, array $excludedFields = [])
     {
         // Existing enum values shouldn't be modified. Just added to entity (collection).
@@ -223,9 +223,7 @@ class ProductImportStrategy extends ProductStrategy implements ExistingEntityAwa
         parent::importExistingEntity($entity, $existingEntity, $itemData, $excludedFields);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function updateContextCounters($entity)
     {
         $identifier = $this->databaseHelper->getIdentifier($entity);

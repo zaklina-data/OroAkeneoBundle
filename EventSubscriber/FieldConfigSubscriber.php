@@ -14,9 +14,7 @@ class FieldConfigSubscriber implements EventSubscriberInterface
         AttributeFamily::class => ['attributeGroups' => ['full' => true]],
     ];
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public static function getSubscribedEvents(): array
     {
         return [

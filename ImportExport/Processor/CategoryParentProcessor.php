@@ -15,8 +15,7 @@ class CategoryParentProcessor implements ProcessorInterface, MemoryCacheProvider
 {
     use MemoryCacheProviderAwareTrait;
 
-    /** @var ManagerRegistry */
-    private $registry;
+    private ManagerRegistry $registry;
 
     public function __construct(ManagerRegistry $registry)
     {
@@ -26,9 +25,8 @@ class CategoryParentProcessor implements ProcessorInterface, MemoryCacheProvider
     /**
      * @SuppressWarnings(PHPMD.NPathComplexity)
      * @SuppressWarnings(PHPMD.CyclomaticComplexity)
-     * @param mixed $item
      */
-    public function process($item)
+    public function process(mixed $item): ?Category
     {
         if (!$item instanceof Category) {
             return null;
@@ -41,7 +39,7 @@ class CategoryParentProcessor implements ProcessorInterface, MemoryCacheProvider
         $transport = $channel->getTransport();
 
         $akeneoCode = $item->getAkeneoCode();
-        $parentCode = $this->memoryCacheProvider->get('category_parent_' . $akeneoCode) ?? null;
+        $parentCode = $this->memoryCacheProvider->get('category_parent_' . $akeneoCode);
 
         $parent = $item->getParentCategory();
         $rootCategory = $transport->getRootCategory();
@@ -62,7 +60,7 @@ class CategoryParentProcessor implements ProcessorInterface, MemoryCacheProvider
             return $item;
         }
 
-        $parentId = $this->memoryCacheProvider->get('category_id_' . $parentCode) ?? null;
+        $parentId = $this->memoryCacheProvider->get('category_id_' . $parentCode);
         if (!$parentId && !$parent) {
             $item->setParentCategory($rootCategory);
 

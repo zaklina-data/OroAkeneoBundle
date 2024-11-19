@@ -15,38 +15,22 @@ class AttributeImportStrategy extends EntityFieldImportStrategy
 {
     use StrategyValidationTrait;
 
-    /**
-     * @var FieldHelper
-     */
-    protected $fieldHelper;
+    protected ConfigManager $configManager;
 
-    /**
-     * @var ConfigManager
-     */
-    protected $configManager;
-
-    /**
-     * @param FieldHelper $fieldHelper
-     */
-    public function setFieldHelper($fieldHelper)
+    public function setFieldHelper(FieldHelper $fieldHelper): void
     {
         $this->fieldHelper = $fieldHelper;
     }
 
-    /**
-     * @param ConfigManager $configManager
-     */
-    public function setConfigManager($configManager)
+    public function setConfigManager(ConfigManager $configManager): void
     {
         $this->configManager = $configManager;
     }
 
     /**
      * @param FieldConfigModel $entity
-     *
-     * @return object|null
      */
-    protected function beforeProcessEntity($entity)
+    protected function beforeProcessEntity($entity): ?object
     {
         if (!$entity->getType()) {
             return null;
@@ -71,16 +55,13 @@ class AttributeImportStrategy extends EntityFieldImportStrategy
         return parent::beforeProcessEntity($entity);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function processEntity(FieldConfigModel $entity)
+    #[\Override]
+    protected function processEntity(FieldConfigModel $entity): ?FieldConfigModel
     {
         $supportedTypes = $this->fieldTypeProvider->getSupportedFieldTypes();
         $relationTypes = $this->fieldTypeProvider->getSupportedRelationTypes();
 
-        if (
-            !in_array($entity->getType(), $supportedTypes, true)
+        if (!in_array($entity->getType(), $supportedTypes, true)
             && !in_array($entity->getType(), $relationTypes, true)
         ) {
             $this->addErrors($this->translator->trans('oro.entity_config.import.message.invalid_field_type'));
@@ -91,7 +72,7 @@ class AttributeImportStrategy extends EntityFieldImportStrategy
         return $entity;
     }
 
-    protected function addErrors($errors)
+    protected function addErrors($errors): void
     {
         $this->context->incrementErrorEntriesCount();
         foreach ((array)$errors as $validationError) {
@@ -102,7 +83,7 @@ class AttributeImportStrategy extends EntityFieldImportStrategy
                         '%error%' => $validationError,
                         '%item%' => json_encode(
                             $this->context->getValue('rawItemData'),
-                            \JSON_UNESCAPED_SLASHES | \JSON_UNESCAPED_UNICODE
+                            JSON_THROW_ON_ERROR|\JSON_UNESCAPED_SLASHES|\JSON_UNESCAPED_UNICODE
                         ),
                     ]
                 )

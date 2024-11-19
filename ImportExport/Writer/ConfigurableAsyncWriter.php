@@ -2,11 +2,11 @@
 
 namespace Creativestyle\Bundle\AkeneoBundle\ImportExport\Writer;
 
-use Doctrine\DBAL\Platforms\MySqlPlatform;
-use Doctrine\DBAL\Types\Types;
-use Creativestyle\Bundle\AkeneoBundle\Async\Topics;
+use Creativestyle\Bundle\AkeneoBundle\Async\Topic\ImportProductsTopic;
 use Creativestyle\Bundle\AkeneoBundle\Entity\AkeneoSettings;
 use Creativestyle\Bundle\AkeneoBundle\EventListener\AdditionalOptionalListenerManager;
+use Doctrine\DBAL\Platforms\MySqlPlatform;
+use Doctrine\DBAL\Types\Types;
 use Oro\Bundle\BatchBundle\Entity\StepExecution;
 use Oro\Bundle\BatchBundle\Item\ItemWriterInterface;
 use Oro\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
@@ -32,37 +32,23 @@ class ConfigurableAsyncWriter implements
 
     private const VARIANTS_BATCH_SIZE = 25;
 
-    /** @var MessageProducerInterface * */
-    private $messageProducer;
+    private StepExecution $stepExecution;
 
-    /** @var StepExecution */
-    private $stepExecution;
+    private array $variants = [];
 
-    /** @var DoctrineHelper */
-    private $doctrineHelper;
+    private array $origins = [];
 
-    /** @var OptionalListenerManager */
-    private $optionalListenerManager;
+    private array $models = [];
 
-    /** @var AdditionalOptionalListenerManager */
-    private $additionalOptionalListenerManager;
+    private array $configurable = [];
 
-    private $variants = [];
+    private ?CacheInterface $cache = null;
 
-    private $origins = [];
+    private ?MemoryCacheProviderInterface $configurableMemoryCacheProvider = null;
 
-    private $models = [];
-
-    private $configurable = [];
-
-    /** @var CacheInterface */
-    private $cache;
-
-    /** @var MemoryCacheProviderInterface|null */
-    private $configurableMemoryCacheProvider;
-
-    public function setConfigurableMemoryCacheProvider(?MemoryCacheProviderInterface $configurableMemoryCacheProvider): void
-    {
+    public function setConfigurableMemoryCacheProvider(
+        ?MemoryCacheProviderInterface $configurableMemoryCacheProvider
+    ): void {
         $this->configurableMemoryCacheProvider = $configurableMemoryCacheProvider;
     }
 
@@ -72,24 +58,20 @@ class ConfigurableAsyncWriter implements
     }
 
     public function __construct(
-        MessageProducerInterface $messageProducer,
-        DoctrineHelper $doctrineHelper,
-        OptionalListenerManager $optionalListenerManager,
-        AdditionalOptionalListenerManager $additionalOptionalListenerManager
+        private MessageProducerInterface $messageProducer,
+        private DoctrineHelper $doctrineHelper,
+        private OptionalListenerManager $optionalListenerManager,
+        private AdditionalOptionalListenerManager $additionalOptionalListenerManager
     ) {
-        $this->messageProducer = $messageProducer;
-        $this->doctrineHelper = $doctrineHelper;
-        $this->optionalListenerManager = $optionalListenerManager;
-        $this->additionalOptionalListenerManager = $additionalOptionalListenerManager;
     }
 
-    public function initialize()
+    public function initialize(): void
     {
         $this->additionalOptionalListenerManager->disableListeners();
         $this->optionalListenerManager->disableListeners($this->optionalListenerManager->getListeners());
     }
 
-    public function write(array $items)
+    public function write(array $items): void
     {
         if (!$this->variants) {
             $this->variants = $this->cache->get('variants', function () {
@@ -137,7 +119,7 @@ class ConfigurableAsyncWriter implements
         }
     }
 
-    public function flush()
+    public function flush(): void
     {
         $this->optionalListenerManager->enableListeners($this->optionalListenerManager->getListeners());
         $this->additionalOptionalListenerManager->enableListeners();
@@ -146,11 +128,9 @@ class ConfigurableAsyncWriter implements
             return;
         }
 
-        if ($this->variants) {
-            $variants = $this->cache->getItem('variants');
-            $variants->set($this->variants);
-            $this->cache->save($variants);
-        }
+        $variants = $this->cache->getItem('variants');
+        $variants->set($this->variants);
+        $this->cache->save($variants);
 
         if ($this->origins) {
             $origins = $this->cache->getItem('origins');
@@ -169,7 +149,10 @@ class ConfigurableAsyncWriter implements
 
         $this->cache->save($updated);
 
-        $this->variants = array_intersect_key($this->variants, $this->configurableMemoryCacheProvider->get('akeneo_configurable') ?? []);
+        $this->variants = array_intersect_key(
+            $this->variants,
+            $this->configurableMemoryCacheProvider->get('akeneo_configurable') ?? []
+        );
 
         foreach ($this->models as $levelTwo => $levelOne) {
             if (array_key_exists($levelTwo, $this->variants)) {
@@ -177,9 +160,12 @@ class ConfigurableAsyncWriter implements
                     $item['parent'] = $this->origins[$levelOne] ?? $levelOne;
                     $this->variants[$levelOne][$sku] = $item;
 
-                    $akeneoVariantLevels = $this->memoryCacheProvider->get('akeneo_variant_levels') ?? AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_BOTH;
-                    $this->variants[$levelOne][$sku]['parent_disabled'] = $akeneoVariantLevels === AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY;
-                    $this->variants[$levelTwo][$sku]['parent_disabled'] = $akeneoVariantLevels === AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY;
+                    $akeneoVariantLevels = $this->memoryCacheProvider->get('akeneo_variant_levels')
+                        ?? AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_BOTH;
+                    $this->variants[$levelOne][$sku]['parent_disabled'] =
+                        $akeneoVariantLevels === AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_SECOND_ONLY;
+                    $this->variants[$levelTwo][$sku]['parent_disabled'] =
+                        $akeneoVariantLevels === AkeneoSettings::TWO_LEVEL_FAMILY_VARIANT_FIRST_ONLY;
                 }
             }
         }
@@ -231,7 +217,7 @@ class ConfigurableAsyncWriter implements
     private function sendMessage(int $channelId, int $jobId, bool $incrementedRead = false): void
     {
         $this->messageProducer->send(
-            \Creativestyle\Bundle\AkeneoBundle\Async\Topic\ImportProductsTopic::getName(),
+            ImportProductsTopic::getName(),
             new Message(
                 [
                     'integrationId' => $channelId,
@@ -259,7 +245,7 @@ class ConfigurableAsyncWriter implements
         return (int)$rootJobId;
     }
 
-    public function setStepExecution(StepExecution $stepExecution)
+    public function setStepExecution(StepExecution $stepExecution): void
     {
         $this->stepExecution = $stepExecution;
     }

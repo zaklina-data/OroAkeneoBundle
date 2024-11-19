@@ -19,31 +19,27 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
     use StrategyRelationsTrait;
     use StrategyValidationTrait;
 
-    /** @var SlugGenerator */
-    private $slugGenerator;
+    private SlugGenerator $slugGenerator;
 
     /**
-     * @var Category[]
-     *
      * Cache existing category request in scope of a single row processing to avoid excess DB queries
+     *
+     * @var Category[]
      */
-    private $existingCategories = [];
+    private array $existingCategories = [];
 
-    /** @var int */
-    private $rootCategoryId;
+    private ?int $rootCategoryId = null;
 
-    public function close()
+    public function close(): void
     {
-        $this->reflectionProperties = [];
         $this->cachedEntities = [];
-
         $this->existingCategories = [];
         $this->rootCategoryId = null;
 
         $this->databaseHelper->onClear();
     }
 
-    protected function beforeProcessEntity($entity)
+    protected function beforeProcessEntity($entity): object
     {
         if ($entity instanceof Category) {
             $parent = $entity->getParentCategory();
@@ -57,7 +53,7 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
     }
 
     /** @param Category $entity */
-    protected function afterProcessEntity($entity)
+    protected function afterProcessEntity($entity): object
     {
         if ($entity->getSlugPrototypes()->isEmpty()) {
             foreach ($entity->getTitles() as $localizedTitle) {
@@ -81,14 +77,14 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
         $category->addSlugPrototype($localizedSlug);
     }
 
-    private function getRootCategory()
+    private function getRootCategory(): ?Category
     {
         if (null === $this->rootCategoryId) {
             $channelId = $this->context->getOption('channel');
             $channel = $this->doctrineHelper->getEntityRepository(Channel::class)->find($channelId);
 
             $rootCategoryId = false;
-            if ($channel->getTransport()->getRootCategory()) {
+            if ($channel && $channel->getTransport()?->getRootCategory()) {
                 $rootCategoryId = $channel->getTransport()->getRootCategory()->getId();
             }
             $this->rootCategoryId = $rootCategoryId;
@@ -131,9 +127,7 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
         return $entity;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     protected function updateContextCounters($entity)
     {
         $identifier = $this->databaseHelper->getIdentifier($entity);
@@ -144,7 +138,7 @@ class CategoryImportStrategy extends LocalizedFallbackValueAwareStrategy impleme
         }
     }
 
-    protected function isFieldExcluded($entityName, $fieldName, $itemData = null)
+    protected function isFieldExcluded($entityName, $fieldName, $itemData = null): bool
     {
         $excludeCategoryFields = [
             'childCategories',

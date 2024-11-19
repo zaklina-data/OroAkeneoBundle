@@ -7,20 +7,16 @@ use Oro\Bundle\IntegrationBundle\Provider\IconAwareIntegrationInterface;
 
 class AkeneoChannel implements ChannelInterface, IconAwareIntegrationInterface
 {
-    const TYPE = 'oro_akeneo';
+    public const TYPE = 'oro_akeneo';
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getLabel()
+    #[\Override]
+    public function getLabel(): string
     {
         return 'oro.akeneo.integration.channel.label';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getIcon()
+    #[\Override]
+    public function getIcon(): string
     {
         return 'bundles/oroakeneo/img/akeneo-icon.svg';
     }

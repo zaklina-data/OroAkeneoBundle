@@ -12,6 +12,7 @@ use Oro\Bundle\BatchBundle\Item\ItemWriterInterface;
 use Oro\Bundle\BatchBundle\Item\Support\ClosableInterface;
 use Oro\Bundle\BatchBundle\Step\StepExecutionAwareInterface;
 use Oro\Bundle\BatchBundle\Step\StepExecutionRestoreInterface;
+use Oro\Bundle\EntityExtendBundle\EntityPropertyInfo;
 use Oro\Bundle\PlatformBundle\Manager\OptionalListenerManager;
 
 class CumulativeWriter implements
@@ -20,26 +21,15 @@ class CumulativeWriter implements
     StepExecutionAwareInterface,
     StepExecutionRestoreInterface
 {
-    const MAX_UOW_OBJECTS_WITH_CHANGES = 150;
-    const MAX_UOW_OBJECTS_WITHOUT_CHANGES = 200;
-    const MAX_UOW_OPERATIONS = 100;
+    private const MAX_UOW_OBJECTS_WITH_CHANGES = 150;
+    private const MAX_UOW_OBJECTS_WITHOUT_CHANGES = 200;
+    private const MAX_UOW_OPERATIONS = 100;
+    private const LETS_WRITE = false;
+    private const LETS_SKIP = true;
 
-    /** @var ItemWriterInterface */
-    private $writer;
+    private array $items = [];
 
-    /** @var OptionalListenerManager */
-    private $optionalListenerManager;
-
-    /** @var ManagerRegistry */
-    private $registry;
-
-    /** @var AdditionalOptionalListenerManager */
-    private $additionalOptionalListenerManager;
-
-    /** @var array */
-    private $items = [];
-
-    private $forceListeners = [
+    private array $forceListeners = [
         'oro_entity.event_listener.entity_modify_created_updated_properties_listener',
         'oro_redirect.event_listener.slug_change',
         'oro_redirect.event_listener.slug_prototype_change',
@@ -48,21 +38,15 @@ class CumulativeWriter implements
     ];
 
     public function __construct(
-        ItemWriterInterface $writer,
-        OptionalListenerManager $optionalListenerManager,
-        ManagerRegistry $registry,
-        AdditionalOptionalListenerManager $additionalOptionalListenerManager
+        private ItemWriterInterface $writer,
+        private OptionalListenerManager $optionalListenerManager,
+        private ManagerRegistry $registry,
+        private AdditionalOptionalListenerManager $additionalOptionalListenerManager
     ) {
-        $this->writer = $writer;
-        $this->optionalListenerManager = $optionalListenerManager;
-        $this->registry = $registry;
-        $this->additionalOptionalListenerManager = $additionalOptionalListenerManager;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function write(array $items)
+    #[\Override]
+    public function write(array $items): void
     {
         foreach ($items as $item) {
             $this->items[] = $item;
@@ -75,7 +59,7 @@ class CumulativeWriter implements
         $this->doWrite();
     }
 
-    private function doWrite()
+    private function doWrite(): void
     {
         try {
             $this->additionalOptionalListenerManager->disableListeners();
@@ -110,9 +94,6 @@ class CumulativeWriter implements
      */
     private function skipFlush(array &$items): bool
     {
-        $letsWrite = false;
-        $letsSkip = true;
-
         /** @var EntityManager $entityManager */
         $entityManager = $this->registry->getManager();
 
@@ -124,20 +105,20 @@ class CumulativeWriter implements
 
         $count = $this->getUnitOfWorkChangesCount($unitOfWork);
         if ($count > self::MAX_UOW_OPERATIONS) {
-            return $letsWrite;
+            return self::LETS_WRITE;
         }
 
         $entityStates = $this->getUnitOfWorkStatesCount($unitOfWork);
         if ($entityStates > self::MAX_UOW_OBJECTS_WITHOUT_CHANGES) {
-            return $letsWrite;
+            return self::LETS_WRITE;
         }
 
         if ($count && $entityStates > self::MAX_UOW_OBJECTS_WITH_CHANGES) {
-            return $letsWrite;
+            return self::LETS_WRITE;
         }
 
         if (!$count) {
-            return $letsSkip;
+            return self::LETS_SKIP;
         }
 
         foreach ($items as $item) {
@@ -146,19 +127,19 @@ class CumulativeWriter implements
 
         $count = $this->getUnitOfWorkChangesCount($unitOfWork);
         if ($count > self::MAX_UOW_OPERATIONS) {
-            return $letsWrite;
+            return self::LETS_WRITE;
         }
 
         $entityStates = $this->getUnitOfWorkStatesCount($unitOfWork);
         if ($entityStates > self::MAX_UOW_OBJECTS_WITHOUT_CHANGES) {
-            return $letsWrite;
+            return self::LETS_WRITE;
         }
 
         if ($count && $entityStates > self::MAX_UOW_OBJECTS_WITH_CHANGES) {
-            return $letsWrite;
+            return self::LETS_WRITE;
         }
 
-        return $letsSkip;
+        return self::LETS_SKIP;
     }
 
     private function getUnitOfWorkChangesCount(UnitOfWork $unitOfWork): int
@@ -186,19 +167,15 @@ class CumulativeWriter implements
         return count($entityStates);
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function setStepExecution(StepExecution $stepExecution)
+    #[\Override]
+    public function setStepExecution(StepExecution $stepExecution): void
     {
         if ($this->writer instanceof StepExecutionAwareInterface) {
             $this->writer->setStepExecution($stepExecution);
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function restoreStepExecution()
     {
         if ($this->writer instanceof StepExecutionRestoreInterface) {
@@ -207,7 +184,7 @@ class CumulativeWriter implements
     }
 
     /** {@inheritdoc} */
-    public function close()
+    public function close(): void
     {
         $this->doWrite();
 
@@ -216,16 +193,16 @@ class CumulativeWriter implements
         }
     }
 
-    public function initialize()
+    public function initialize(): void
     {
-        if (\Oro\Bundle\EntityExtendBundle\EntityPropertyInfo::methodExists($this->writer, 'initialize')) {
+        if (EntityPropertyInfo::methodExists($this->writer, 'initialize')) {
             $this->writer->initialize();
         }
     }
 
-    public function flush()
+    public function flush(): void
     {
-        if (\Oro\Bundle\EntityExtendBundle\EntityPropertyInfo::methodExists($this->writer, 'flush')) {
+        if (EntityPropertyInfo::methodExists($this->writer, 'flush')) {
             $this->writer->flush();
         }
     }

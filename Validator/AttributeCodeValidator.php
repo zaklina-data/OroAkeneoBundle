@@ -8,26 +8,19 @@ use Symfony\Component\Validator\ConstraintValidator;
 
 class AttributeCodeValidator extends ConstraintValidator
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function validate($value, Constraint $constraint)
+    #[\Override]
+    public function validate($value, Constraint $constraint): void
     {
         /* @var AttributeCodeConstraint $constraint */
-        if (!$this->isAkeneoConform($value) && !empty($value)) {
+        if (!empty($value) && !$this->isAkeneoConform($value)) {
             $this->context->addViolation($constraint->message);
         }
     }
 
-    /**
-     * @param string $value
-     *
-     * @return bool
-     */
-    private function isAkeneoConform($value)
+    private function isAkeneoConform(string $value): bool
     {
         preg_match_all('/([^a-zA-Z0-9_;])/m', $value, $matches, \PREG_SET_ORDER, 0);
 
-        return count($matches) == 0;
+        return count($matches) === 0;
     }
 }

@@ -17,19 +17,15 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor impleme
 {
     use MemoryCacheProviderAwareTrait;
 
-    /** @var string */
-    private $entityConfigModelClassName;
+    private string $entityConfigModelClassName;
 
-    /** @var ConfigManager */
-    private $configManager;
+    private ConfigManager $configManager;
 
-    /** @var FieldHelper */
-    private $fieldHelper;
+    private FieldHelper $fieldHelper;
 
-    /**
-     * {@inheritdoc}
-     */
-    public function process($item)
+
+    #[\Override]
+    public function process(mixed $item): mixed
     {
         $code = $item['code'];
         $type = $item['type'];
@@ -63,7 +59,7 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor impleme
     /**
      * Set attribute labels in context for writer.
      */
-    private function updateAttributeLabelTranslationContext(array &$item, string $fieldName)
+    private function updateAttributeLabelTranslationContext(array &$item, string $fieldName): void
     {
         if (empty($item['translatedLabels'])) {
             return;
@@ -80,7 +76,7 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor impleme
     /**
      * Set option labels in context for writer.
      */
-    private function updateOptionLabelTranslationContext(array &$item, string $fieldName)
+    private function updateOptionLabelTranslationContext(array &$item, string $fieldName): void
     {
         if (empty($item['options'])) {
             return;
@@ -112,15 +108,12 @@ class AttributeImportProcessor extends StepExecutionAwareImportProcessor impleme
         $this->fieldHelper = $fieldHelper;
     }
 
-    public function setEntityConfigModelClassName(string $className)
+    public function setEntityConfigModelClassName(string $className): void
     {
         $this->entityConfigModelClassName = $className;
     }
 
-    /**
-     * @param ConfigManager $configManager
-     */
-    public function setConfigManager($configManager)
+    public function setConfigManager(ConfigManager $configManager): void
     {
         $this->configManager = $configManager;
     }

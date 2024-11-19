@@ -12,10 +12,7 @@ use Oro\Bundle\LocaleBundle\Entity\Localization;
  */
 trait LocalizationAwareTrait
 {
-    /**
-     * @return Localization
-     */
-    protected function getDefaultLocalization()
+    protected function getDefaultLocalization(): Localization
     {
         return $this->doctrineHelper
             ->getEntityReference(
@@ -27,7 +24,7 @@ trait LocalizationAwareTrait
     /**
      * @return Localization[]
      */
-    private function getLocalizations(string $code)
+    private function getLocalizations(string $code): array
     {
         return $this->doctrineHelper
             ->getEntityRepository(Localization::class)

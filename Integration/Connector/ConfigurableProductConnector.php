@@ -2,34 +2,29 @@
 
 namespace Creativestyle\Bundle\AkeneoBundle\Integration\Connector;
 
-use Creativestyle\Bundle\AkeneoBundle\Integration\AkeneoTransport;
 use Creativestyle\Bundle\AkeneoBundle\Placeholder\SchemaUpdateFilter;
 use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareInterface;
 use Oro\Bundle\CacheBundle\Provider\MemoryCacheProviderAwareTrait;
 use Oro\Bundle\IntegrationBundle\Entity\Channel;
 use Oro\Bundle\IntegrationBundle\Provider\AbstractConnector;
 use Oro\Bundle\IntegrationBundle\Provider\AllowedConnectorInterface;
-use Oro\Bundle\IntegrationBundle\Provider\ConnectorInterface;
 use Oro\Bundle\ProductBundle\Entity\Product;
 use Symfony\Contracts\Cache\CacheInterface;
 
 /**
  * Integration configurable product connector.
  */
-class ConfigurableProductConnector extends AbstractConnector implements ConnectorInterface, AllowedConnectorInterface, MemoryCacheProviderAwareInterface
+class ConfigurableProductConnector extends AbstractConnector implements
+    AllowedConnectorInterface,
+    MemoryCacheProviderAwareInterface
 {
     use MemoryCacheProviderAwareTrait;
 
-    const PAGE_SIZE = 100;
+    private const PAGE_SIZE = 100;
 
-    /** @var AkeneoTransport */
-    protected $transport;
+    protected SchemaUpdateFilter $schemaUpdateFilter;
 
-    /** @var SchemaUpdateFilter */
-    protected $schemaUpdateFilter;
-
-    /** @var CacheInterface */
-    private $cache;
+    private CacheInterface $cache;
 
     public function setCache(CacheInterface $cache): void
     {
@@ -41,17 +36,17 @@ class ConfigurableProductConnector extends AbstractConnector implements Connecto
         return 'oro.akeneo.connector.configurable_product.label';
     }
 
-    public function getImportEntityFQCN()
+    public function getImportEntityFQCN(): string
     {
         return Product::class;
     }
 
-    public function getImportJobName()
+    public function getImportJobName(): string
     {
         return 'akeneo_configurable_product_import';
     }
 
-    public function getType()
+    public function getType(): string
     {
         return 'configurable_product';
     }
@@ -66,7 +61,7 @@ class ConfigurableProductConnector extends AbstractConnector implements Connecto
         return $this->schemaUpdateFilter->isApplicable($integration, Product::class) === false;
     }
 
-    protected function getConnectorSource()
+    protected function getConnectorSource(): iterable
     {
         $variants = $this->memoryCacheProvider->get('akeneo_variants') ?? [];
         if ($variants) {

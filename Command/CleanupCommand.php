@@ -8,6 +8,7 @@ use Oro\Bundle\CronBundle\Command\CronCommandScheduleDefinitionInterface;
 use Oro\Bundle\EntityBundle\ORM\DoctrineHelper;
 use Oro\Bundle\IntegrationBundle\Entity\FieldsChanges;
 use Oro\Bundle\MessageQueueBundle\Entity\Job;
+use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -15,31 +16,27 @@ use Symfony\Component\Console\Output\OutputInterface;
 /**
  * Clears old records from oro_integration_fields_changes table before repack.
  */
-#[\Symfony\Component\Console\Attribute\AsCommand('oro:cron:akeneo:cleanup', 'Clears old records from oro_integration_fields_changes table.')]
+#[AsCommand('oro:cron:akeneo:cleanup', 'Clears old records from oro_integration_fields_changes table.')]
 class CleanupCommand extends Command implements
     CronCommandScheduleDefinitionInterface,
     CronCommandActivationInterface
 {
-    /** @var DoctrineHelper */
-    private $doctrineHelper;
-
-    public function __construct(DoctrineHelper $doctrineHelper)
+    public function __construct(private DoctrineHelper $doctrineHelper)
     {
-        $this->doctrineHelper = $doctrineHelper;
         parent::__construct();
     }
 
-    public function isActive()
+    public function isActive(): bool
     {
         return true;
     }
 
-    public function getDefaultDefinition()
+    public function getDefaultDefinition(): string
     {
         return '0 2 * * 6';
     }
 
-    public function configure()
+    public function configure(): void
     {
         $this
             ->setHelp(
@@ -61,7 +58,7 @@ class CleanupCommand extends Command implements
 
         $output->writeln('<info>Fields changes cleanup complete</info>');
 
-        return \Symfony\Component\Console\Command\Command::SUCCESS;
+        return Command::SUCCESS;
     }
 
     private function deleteRecords(): int
@@ -85,7 +82,12 @@ class CleanupCommand extends Command implements
         $jqb
             ->select('j.id')
             ->where($jqb->expr()->in('j.status', ':statuses'))
-            ->setParameter('statuses', [Job::STATUS_SUCCESS, Job::STATUS_CANCELLED, Job::STATUS_FAILED, Job::STATUS_STALE])
+            ->setParameter('statuses', [
+                Job::STATUS_SUCCESS,
+                Job::STATUS_CANCELLED,
+                Job::STATUS_FAILED,
+                Job::STATUS_STALE
+            ])
             ->orderBy($jqb->expr()->desc('j.id'));
 
         $iterator = new BufferedIdentityQueryResultIterator($jqb->getQuery());
@@ -94,7 +96,7 @@ class CleanupCommand extends Command implements
         $iterator->setPageLoadedCallback(function (array $rows) use ($qb, &$result): array {
             $ids = array_column($rows, 'id');
 
-            $result = $result + $qb->setParameter('ids', $ids)->getQuery()->execute();
+            $result += $qb->setParameter('ids', $ids)->getQuery()->execute();
 
             return $ids;
         });

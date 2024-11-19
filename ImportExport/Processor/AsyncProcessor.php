@@ -6,7 +6,8 @@ use Oro\Bundle\ImportExportBundle\Processor\ProcessorInterface;
 
 class AsyncProcessor implements ProcessorInterface
 {
-    public function process($item)
+    #[\Override]
+    public function process(mixed $item): mixed
     {
         return $item;
     }

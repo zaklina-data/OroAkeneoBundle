@@ -14,54 +14,41 @@ use Oro\Bundle\ProductBundle\Entity\Product;
 /**
  * Integration product connector.
  */
-class ProductConnector extends AbstractConnector implements ConnectorInterface, AllowedConnectorInterface, MemoryCacheProviderAwareInterface
+class ProductConnector extends AbstractConnector implements AllowedConnectorInterface, MemoryCacheProviderAwareInterface
 {
     use MemoryCacheProviderAwareTrait;
 
-    const IMPORT_JOB_NAME = 'akeneo_product_import';
-    const PAGE_SIZE = 100;
-    const TYPE = 'product';
+    private const IMPORT_JOB_NAME = 'akeneo_product_import';
+    private const PAGE_SIZE = 100;
+    private const TYPE = 'product';
 
-    /**
-     * @var SchemaUpdateFilter
-     */
-    protected $schemaUpdateFilter;
+    protected SchemaUpdateFilter $schemaUpdateFilter;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function getLabel(): string
     {
         return 'oro.akeneo.connector.product.label';
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getImportEntityFQCN()
+    #[\Override]
+    public function getImportEntityFQCN(): string
     {
         return Product::class;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getImportJobName()
+    #[\Override]
+    public function getImportJobName(): string
     {
         return self::IMPORT_JOB_NAME;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function getType()
+    #[\Override]
+    public function getType(): string
     {
         return self::TYPE;
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function isAllowed(Channel $integration, array $processedConnectorsStatuses): bool
     {
         return !$this->needToUpdateSchema($integration);
@@ -72,10 +59,8 @@ class ProductConnector extends AbstractConnector implements ConnectorInterface, 
         $this->schemaUpdateFilter = $schemaUpdateFilter;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getConnectorSource()
+    #[\Override]
+    protected function getConnectorSource(): iterable
     {
         $items = $this->memoryCacheProvider->get('akeneo_items') ?? [];
 

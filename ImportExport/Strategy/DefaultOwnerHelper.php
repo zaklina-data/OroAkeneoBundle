@@ -8,21 +8,13 @@ use Oro\Bundle\SecurityBundle\Owner\Metadata\OwnershipMetadataProviderInterface;
 
 class DefaultOwnerHelper
 {
-    /** @var DoctrineHelper */
-    private $doctrineHelper;
-
-    /** @var OwnershipMetadataProviderInterface */
-    private $ownershipMetadataProvider;
-
     public function __construct(
-        DoctrineHelper $doctrineHelper,
-        OwnershipMetadataProviderInterface $ownershipMetadataProvider
+        private DoctrineHelper $doctrineHelper,
+        private OwnershipMetadataProviderInterface $ownershipMetadataProvider
     ) {
-        $this->doctrineHelper = $doctrineHelper;
-        $this->ownershipMetadataProvider = $ownershipMetadataProvider;
     }
 
-    public function populateChannelOwner($entity, Integration $integration)
+    public function populateChannelOwner($entity, Integration $integration): void
     {
         $defaultUserOwner = $integration->getDefaultUserOwner();
 
@@ -30,7 +22,7 @@ class DefaultOwnerHelper
         $doctrineMetadata  = $this->doctrineHelper->getEntityMetadata($className);
         $ownershipMetadata = $this->ownershipMetadataProvider->getMetadata($className);
 
-        if ($defaultUserOwner && $ownershipMetadata->isUserOwned()) {
+        if ($doctrineMetadata && $defaultUserOwner && $ownershipMetadata->isUserOwned()) {
             $doctrineMetadata->setFieldValue(
                 $entity,
                 $ownershipMetadata->getOwnerFieldName(),

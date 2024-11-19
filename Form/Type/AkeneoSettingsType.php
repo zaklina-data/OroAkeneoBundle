@@ -37,40 +37,16 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    const BLOCK_PREFIX = 'oro_akeneo_settings';
+    private const BLOCK_PREFIX = 'oro_akeneo_settings';
 
-    /**
-     * @var array
-     */
-    public $codes = [];
-    /**
-     * @var TranslatorInterface
-     */
-    protected $translator;
-    /**
-     * @var SyncProductsDataProviderInterface
-     */
-    private $syncProductsDataProvider;
-    /**
-     * @var AkeneoTransportInterface
-     */
-    private $akeneoTransport;
-
-    /**
-     * @var Crypter
-     */
-    private $crypter;
+    public array $codes = [];
 
     public function __construct(
-        TranslatorInterface $translator,
-        SyncProductsDataProviderInterface $syncProductsDataProvider,
-        AkeneoTransportInterface $akeneoTransport,
-        Crypter $crypter
+        protected TranslatorInterface $translator,
+        private SyncProductsDataProviderInterface $syncProductsDataProvider,
+        private AkeneoTransportInterface $akeneoTransport,
+        private Crypter $crypter
     ) {
-        $this->translator = $translator;
-        $this->syncProductsDataProvider = $syncProductsDataProvider;
-        $this->akeneoTransport = $akeneoTransport;
-        $this->crypter = $crypter;
     }
 
     /**
@@ -80,7 +56,7 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
      *
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             ->add(
@@ -127,20 +103,6 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                     'multiple'          => false,
                     'choices'           => [],
                     'constraints'       => new NotBlank(),
-                ]
-            )
-            ->add(
-                'syncProducts',
-                ChoiceType::class,
-                [
-                    'choices'           => $this->syncProductsDataProvider->getSyncProducts(),
-                    'choice_label'      => function ($action) {
-                        return $this->translator->trans(
-                            sprintf('oro.akeneo.integration.settings.sync_products.%s', $action)
-                        );
-                    },
-                    'label'             => 'oro.akeneo.integration.settings.sync_products.label',
-                    'required'          => true,
                 ]
             )
             ->add(
@@ -337,7 +299,7 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
         $builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'onPreSubmit'], 5000);
     }
 
-    public function onPreSetData(FormEvent $event)
+    public function onPreSetData(FormEvent $event): void
     {
         $form = $event->getForm();
         /** @var AkeneoSettings $data */
@@ -354,7 +316,10 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 'required'          => true,
                 'label'             => 'oro.akeneo.integration.settings.akeneo_channels.label',
                 'multiple'          => false,
-                'choices'           => array_combine($data->getAkeneoChannels() ?? [], $data->getAkeneoChannels() ?? []),
+                'choices'           => array_combine(
+                    $data->getAkeneoChannels() ?? [],
+                    $data->getAkeneoChannels() ?? []
+                ),
                 'placeholder'       => 'oro.akeneo.integration.settings.akeneo_channels.placeholder',
             ]
         );
@@ -366,7 +331,10 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 'required'          => false,
                 'label'             => 'oro.akeneo.integration.settings.akeneo_currencies.label',
                 'multiple'          => true,
-                'choices'           => array_combine($data->getAkeneoCurrencies() ?? [], $data->getAkeneoCurrencies() ?? []),
+                'choices'           => array_combine(
+                    $data->getAkeneoCurrencies() ?? [],
+                    $data->getAkeneoCurrencies() ?? []
+                ),
             ]
         );
 
@@ -377,8 +345,13 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                 'required'          => false,
                 'label'             => false,
                 'multiple'          => true,
-                'choices'           => array_combine($data->getAkeneoLocalesList() ?? [], $data->getAkeneoLocalesList() ?? []),
-                'choice_label'      => function ($choice) { return Locales::getName($choice); },
+                'choices'           => array_combine(
+                    $data->getAkeneoLocalesList() ?? [],
+                    $data->getAkeneoLocalesList() ?? []
+                ),
+                'choice_label'      => function ($choice) {
+                    return Locales::getName($choice);
+                },
             ]
         );
 
@@ -401,7 +374,7 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
     /**
      * @SuppressWarnings(PHPMD.ExcessiveMethodLength)
      */
-    public function onPreSubmit(FormEvent $event)
+    public function onPreSubmit(FormEvent $event): void
     {
         try {
             $data = $event->getData();
@@ -460,7 +433,9 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
                     'label'             => false,
                     'multiple'          => true,
                     'choices'           => array_combine($localesList, $localesList),
-                    'choice_label'      => function ($choice) { return Locales::getName($choice); },
+                    'choice_label'      => function ($choice) {
+                        return Locales::getName($choice);
+                    },
                 ]
             );
 
@@ -513,7 +488,7 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
     /**
      * @throws AccessException
      */
-    public function configureOptions(OptionsResolver $resolver)
+    public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults(
             [
@@ -522,9 +497,6 @@ class AkeneoSettingsType extends AbstractType implements LoggerAwareInterface
         );
     }
 
-    /**
-     * @return string
-     */
     public function getBlockPrefix(): string
     {
         return self::BLOCK_PREFIX;

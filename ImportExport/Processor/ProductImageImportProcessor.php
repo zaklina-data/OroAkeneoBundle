@@ -10,7 +10,7 @@ use Oro\Bundle\ProductBundle\Entity\ProductImageType;
 
 class ProductImageImportProcessor extends StepExecutionAwareImportProcessor implements ClosableInterface
 {
-    public function close()
+    public function close(): void
     {
         if ($this->strategy instanceof ClosableInterface) {
             $this->strategy->close();
@@ -21,10 +21,8 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor impl
         }
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function process($items)
+    #[\Override]
+    public function process(mixed $items): mixed
     {
         $images = [];
         $product = null;
@@ -73,7 +71,6 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor impl
     {
         $hasMain = false;
         $hasListing = false;
-        $image = null;
 
         foreach ($product->getImages() as $image) {
             if (!$image->getImage()) {
@@ -83,7 +80,7 @@ class ProductImageImportProcessor extends StepExecutionAwareImportProcessor impl
             }
 
             $filename = $image->getImage()->getOriginalFilename();
-            if (!in_array($filename, array_keys($images))) {
+            if (!array_key_exists($filename, $images)) {
                 $product->removeImage($image);
 
                 continue;

@@ -7,10 +7,8 @@ use Oro\Bundle\IntegrationBundle\ImportExport\Processor\StepExecutionAwareImport
 
 class ProductImportProcessor extends StepExecutionAwareImportProcessor implements ClosableInterface
 {
-    /**
-     * {@inheritdoc}
-     */
-    public function close()
+    #[\Override]
+    public function close(): void
     {
         if ($this->strategy instanceof ClosableInterface) {
             $this->strategy->close();

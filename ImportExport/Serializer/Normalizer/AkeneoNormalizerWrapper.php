@@ -5,24 +5,19 @@ namespace Creativestyle\Bundle\AkeneoBundle\ImportExport\Serializer\Normalizer;
 use Creativestyle\Bundle\AkeneoBundle\Integration\AkeneoChannel;
 use Symfony\Component\Serializer\Normalizer\ContextAwareDenormalizerInterface;
 
-class AkeneoNormalizerWrapper implements \Symfony\Component\Serializer\Normalizer\DenormalizerInterface
+readonly class AkeneoNormalizerWrapper implements ContextAwareDenormalizerInterface
 {
-    /** @var \Symfony\Component\Serializer\Normalizer\DenormalizerInterface */
-    private $fileNormalizer;
-
-    public function __construct(\Symfony\Component\Serializer\Normalizer\DenormalizerInterface $fileNormalizer)
+    public function __construct(private ContextAwareDenormalizerInterface $fileNormalizer)
     {
-        $this->fileNormalizer = $fileNormalizer;
     }
 
     public function supportsDenormalization($data, $type, $format = null, array $context = []): bool
     {
-        $supports = $this->fileNormalizer->supportsDenormalization($data, $type, $format, $context);
-        if ($supports) {
+        if ($this->fileNormalizer->supportsDenormalization($data, $type, $format, $context)) {
             return AkeneoChannel::TYPE === ($context['channelType'] ?? null);
         }
 
-        return $supports;
+        return false;
     }
 
     public function denormalize($data, $type, $format = null, array $context = [])

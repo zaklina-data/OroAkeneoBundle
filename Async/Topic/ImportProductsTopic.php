@@ -2,19 +2,42 @@
 
 namespace Creativestyle\Bundle\AkeneoBundle\Async\Topic;
 
-class ImportProductsTopic extends \Oro\Component\MessageQueue\Topic\AbstractTopic
+use Oro\Component\MessageQueue\Topic\AbstractTopic;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+class ImportProductsTopic extends AbstractTopic
 {
+    private const string TOPIC = 'oro.integration.akeneo.product';
+
     public static function getName(): string
     {
-        return 'oro.integration.akeneo.product';
+        return self::TOPIC;
     }
+
     public static function getDescription(): string
     {
-        // TODO: Implement getDescription() method.
-        return '';
+        return 'Akeneo product import.';
     }
-    public function configureMessageBody(\Symfony\Component\OptionsResolver\OptionsResolver $resolver): void
+
+    public function configureMessageBody(OptionsResolver $resolver): void
     {
-        // TODO: Implement configureMessageBody() method.
+        $resolver
+            ->setDefined([
+                'integrationId',
+                'connector',
+                'connector_parameters',
+                'transport_batch_size'
+            ])
+            ->setRequired([
+                'integrationId',
+                'jobId'
+            ])
+            ->setDefaults([
+                'connector' => null,
+                'connector_parameters' => [],
+            ])
+            ->addAllowedTypes('integrationId', 'int')
+            ->addAllowedTypes('connector', ['null', 'string'])
+            ->addAllowedTypes('connector_parameters', 'array');
     }
 }

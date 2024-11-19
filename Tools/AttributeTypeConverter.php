@@ -4,10 +4,7 @@ namespace Creativestyle\Bundle\AkeneoBundle\Tools;
 
 class AttributeTypeConverter
 {
-    /**
-     * @var
-     */
-    const TYPE_MAPPING = [
+    private const TYPE_MAPPING = [
         'pim_catalog_identifier' => 'string',
         'pim_catalog_metric' => 'string',
         'pim_catalog_boolean' => 'boolean',
@@ -25,9 +22,6 @@ class AttributeTypeConverter
         'akeneo_reference_entity_collection' => 'multiEnum',
     ];
 
-    /**
-     * @return string
-     */
     public static function convert(string $type): ?string
     {
         return self::TYPE_MAPPING[mb_strtolower($type)] ?? null;

@@ -11,18 +11,15 @@ class ProductPriceDataConverter extends BaseProductPriceDataConverter
 {
     use AkeneoIntegrationTrait;
 
-    /** @var DoctrineHelper */
-    protected $doctrineHelper;
+    protected DoctrineHelper $doctrineHelper;
 
-    public function setDoctrineHelper(DoctrineHelper $doctrineHelper)
+    public function setDoctrineHelper(DoctrineHelper $doctrineHelper): void
     {
         $this->doctrineHelper = $doctrineHelper;
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    public function convertToImportFormat(array $importedRecord, $skipNullValues = true)
+    #[\Override]
+    public function convertToImportFormat(array $importedRecord, $skipNullValues = true): array
     {
         $importedRecord['quantity'] = 1;
         $importedRecord['unit'] = ['code' => $this->configManager->get('oro_product.default_unit')];
@@ -31,24 +28,19 @@ class ProductPriceDataConverter extends BaseProductPriceDataConverter
         return parent::convertToImportFormat($importedRecord, $skipNullValues);
     }
 
-    /**
-     * @return int
-     */
-    private function getPriceListId()
+    private function getPriceListId(): int
     {
         $transport = $this->getTransport();
 
-        if (!$transport->getPriceList()) {
+        if ($transport && !$transport->getPriceList()) {
             return $this->getDefaultPriceListId();
         }
 
         return $transport->getPriceList()->getId();
     }
 
-    /**
-     * {@inheritdoc}
-     */
-    protected function getHeaderConversionRules()
+    #[\Override]
+    protected function getHeaderConversionRules(): array
     {
         return [
             'sku' => 'product:sku',

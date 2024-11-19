@@ -1,22 +1,22 @@
 Creativestyle\Bundle\AkeneoBundle\Entity\AkeneoSettings:
-  properties:
-    url:
-      - NotBlank: ~
-      - Url: ~
-    clientId:
-      - NotBlank: ~
-    secret:
-      - NotBlank: ~
-    username:
-      - NotBlank: ~
-    password:
-      - NotBlank: ~
-    akeneoActiveChannel:
-      - NotBlank: ~
+    properties:
+        url:
+            - NotBlank: ~
+            - Url: ~
+        clientId:
+            - NotBlank: ~
+        secret:
+            - NotBlank: ~
+        username:
+            - NotBlank: ~
+        password:
+            - NotBlank: ~
+        akeneoActiveChannel:
+            - NotBlank: ~
 
 Oro\Bundle\AttachmentBundle\Entity\File:
-  properties:
-    uuid:
-      - Uuid:
-          strict: false
-          groups: ['import_field_type_akeneo']
+    properties:
+        uuid:
+            - Uuid:
+                strict: false
+                groups: [ 'import_field_type_akeneo' ]

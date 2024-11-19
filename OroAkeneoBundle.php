@@ -11,9 +11,7 @@ use Symfony\Component\HttpKernel\Bundle\Bundle;
 
 class OroAkeneoBundle extends Bundle
 {
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function build(ContainerBuilder $container)
     {
         $container->addCompilerPass(new AdditionalOptionalListenersCompilerPass(), PassConfig::TYPE_AFTER_REMOVING);

@@ -10,9 +10,7 @@ class CategoryImportProcessor extends StepExecutionAwareImportProcessor implemen
 {
     use MemoryCacheProviderAwareTrait;
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function process($item)
     {
         $this->memoryCacheProvider->get(

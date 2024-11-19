@@ -19,8 +19,18 @@ use Oro\Bundle\ProductBundle\Entity\Brand;
  */
 trait LocalizedFallbackValueAwareStrategyTrait
 {
-    protected function generateSearchContextForRelationsUpdate($entity, $entityName, $fieldName, $isPersistRelation)
-    {
+    /**
+     * @param object $entity
+     * @param string $entityName
+     * @param string $fieldName
+     * @param bool $isPersistRelation
+     */
+    protected function generateSearchContextForRelationsUpdate(
+        $entity,
+        $entityName,
+        $fieldName,
+        $isPersistRelation
+    ): array {
         $searchContext = parent::generateSearchContextForRelationsUpdate(
             $entity,
             $entityName,
@@ -56,12 +66,12 @@ trait LocalizedFallbackValueAwareStrategyTrait
         return $searchContext;
     }
 
-    protected function findExistingEntity($entity, array $searchContext = [])
+    protected function findExistingEntity($entity, array $searchContext = []): mixed
     {
         return $this->findExistingEntityTrait($entity, $searchContext);
     }
 
-    public function findExistingEntityTrait($entity, array $searchContext = [])
+    public function findExistingEntityTrait($entity, array $searchContext = []): mixed
     {
         if ($entity instanceof Category && $entity->getAkeneoCode()) {
             return $this->databaseHelper->findOneBy(
@@ -86,12 +96,12 @@ trait LocalizedFallbackValueAwareStrategyTrait
         return parent::findExistingEntity($entity, $searchContext);
     }
 
-    protected function findExistingEntityByIdentityFields($entity, array $searchContext = [])
+    protected function findExistingEntityByIdentityFields($entity, array $searchContext = []): mixed
     {
         return $this->findExistingEntityByIdentityFieldsTrait($entity, $searchContext);
     }
 
-    public function findExistingEntityByIdentityFieldsTrait($entity, array $searchContext = [])
+    public function findExistingEntityByIdentityFieldsTrait($entity, array $searchContext = []): mixed
     {
         if ($entity instanceof Category && $entity->getAkeneoCode()) {
             return $this->databaseHelper->findOneBy(
@@ -116,19 +126,19 @@ trait LocalizedFallbackValueAwareStrategyTrait
         return parent::findExistingEntityByIdentityFields($entity, $searchContext);
     }
 
-    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection)
+    protected function mapCollections(Collection $importedCollection, Collection $sourceCollection): void
     {
     }
 
-    protected function setLocalizationKeys($entity, array $field)
+    protected function setLocalizationKeys($entity, array $field): void
     {
     }
 
-    protected function removeNotInitializedEntities($entity, array $field, array $relations)
+    protected function removeNotInitializedEntities($entity, array $field, array $relations): void
     {
     }
 
-    private function getChannel()
+    private function getChannel(): ?Channel
     {
         return $this->doctrineHelper->getEntityReference(Channel::class, $this->context->getOption('channel'));
     }

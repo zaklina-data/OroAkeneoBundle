@@ -2,22 +2,16 @@
 
 namespace Creativestyle\Bundle\AkeneoBundle\Settings\DataProvider;
 
+/**
+ * @deprecated It will always sync all products.
+ */
 class SyncProductsDataProvider implements SyncProductsDataProviderInterface
 {
-    /**
-     * @internal
-     */
-    const PUBLISHED = 'published';
+    public const PUBLISHED = 'published';
 
-    /**
-     * @internal
-     */
-    const ALL_PRODUCTS = 'all_products';
+    public const ALL_PRODUCTS = 'all_products';
 
-    /**
-     * @return string[]
-     */
-    public function getSyncProducts()
+    public function getSyncProducts(): array
     {
         return [
             self::ALL_PRODUCTS,

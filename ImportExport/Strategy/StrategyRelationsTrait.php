@@ -14,7 +14,7 @@ use Oro\Bundle\EntityBundle\Provider\EntityFieldProvider;
  * @method processEntity
  * @method cacheInverseFieldRelation
  *
- * @internal Performance fix for ArrayColection generated amount
+ * @internal Performance fix for ArrayCollection generated amount
  * @deprecated BAP-20243
  */
 trait StrategyRelationsTrait
@@ -22,10 +22,10 @@ trait StrategyRelationsTrait
     /**
      * @param object $entity
      *
-     * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper::importEntity
      * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ConfigurableAddOrReplaceStrategy::updateRelations
+     * @see \Oro\Bundle\ImportExportBundle\Strategy\Import\ImportStrategyHelper::importEntity
      */
-    protected function updateRelations($entity, array $itemData = null)
+    protected function updateRelations($entity, array $itemData = null): void
     {
         $entityName = $this->doctrineHelper->getEntityClass($entity);
         $fields = $this->fieldHelper->getEntityFields(
@@ -39,13 +39,6 @@ trait StrategyRelationsTrait
                 $isFullRelation = $this->fieldHelper->getConfigValue($entityName, $fieldName, 'full', false);
                 $isPersistRelation = $this->databaseHelper->isCascadePersist($entityName, $fieldName);
 
-                $searchContext = $this->generateSearchContextForRelationsUpdate(
-                    $entity,
-                    $entityName,
-                    $fieldName,
-                    $isPersistRelation
-                );
-
                 if ($this->fieldHelper->isSingleRelation($field)) {
                     // single relation
                     $relationEntity = $this->getObjectValue($entity, $fieldName);
@@ -56,7 +49,12 @@ trait StrategyRelationsTrait
                             $isFullRelation,
                             $isPersistRelation,
                             $relationItemData,
-                            $searchContext,
+                            $this->generateSearchContextForRelationsUpdate(
+                                $entity,
+                                $entityName,
+                                $fieldName,
+                                $isPersistRelation
+                            ),
                             true
                         );
                     }
@@ -64,8 +62,14 @@ trait StrategyRelationsTrait
                 } elseif ($this->fieldHelper->isMultipleRelation($field)) {
                     // multiple relation
                     $relationCollection = $this->getObjectValue($entity, $fieldName);
-                    if ($relationCollection instanceof Collection) {
+                    if (($relationCollection instanceof Collection) && $relationCollection->count()) {
                         $collectionItemData = $this->fieldHelper->getItemData($itemData, $fieldName);
+                        $searchContext = $this->generateSearchContextForRelationsUpdate(
+                            $entity,
+                            $entityName,
+                            $fieldName,
+                            $isPersistRelation
+                        );
                         foreach ($relationCollection as $collectionEntity) {
                             $entityItemData = $this->fieldHelper->getItemData(array_shift($collectionItemData));
                             $existingCollectionEntity = $this->processEntity(

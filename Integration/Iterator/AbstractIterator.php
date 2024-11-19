@@ -11,35 +11,20 @@ abstract class AbstractIterator implements \Iterator
 {
     use LoggerAwareTrait;
 
-    const PAGE_SIZE = 100;
-
-    /**
-     * @var ResourceCursorInterface
-     */
-    protected $resourceCursor;
-
-    /**
-     * @var AkeneoPimClientInterface
-     */
-    protected $client;
+    protected const PAGE_SIZE = 100;
 
     /**
      * AttributeIterator constructor.
      */
     public function __construct(
-        ResourceCursorInterface $resourceCursor,
-        AkeneoPimClientInterface $client,
+        protected ResourceCursorInterface $resourceCursor,
+        protected AkeneoPimClientInterface $client,
         LoggerInterface $logger
     ) {
-        $this->resourceCursor = $resourceCursor;
-        $this->client = $client;
-
         $this->setLogger($logger);
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     final public function current()
     {
         return $this->doCurrent();
@@ -50,33 +35,25 @@ abstract class AbstractIterator implements \Iterator
      */
     abstract public function doCurrent();
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function next()
     {
         $this->resourceCursor->next();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function key()
     {
         return $this->resourceCursor->key();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function valid()
     {
         return $this->resourceCursor->valid();
     }
 
-    /**
-     * {@inheritdoc}
-     */
+    #[\Override]
     public function rewind()
     {
         $this->resourceCursor->rewind();

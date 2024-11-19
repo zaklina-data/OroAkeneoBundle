@@ -9,17 +9,13 @@ use Oro\Component\DoctrineUtils\ORM\QueryBuilderUtil;
 
 class StringVariantFieldValueHandler implements ProductVariantFieldValueHandlerInterface
 {
-    const TYPE = 'string';
-
-    /** @var DoctrineHelper */
-    private $doctrineHelper;
+    private const TYPE = 'string';
 
     /** @var string[][] */
-    private $cache = [];
+    private array $cache = [];
 
-    public function __construct(DoctrineHelper $doctrineHelper)
+    public function __construct(private DoctrineHelper $doctrineHelper)
     {
-        $this->doctrineHelper = $doctrineHelper;
     }
 
     public function getPossibleValues($fieldName): array
@@ -48,12 +44,12 @@ class StringVariantFieldValueHandler implements ProductVariantFieldValueHandlerI
         return $values;
     }
 
-    public function getScalarValue($value): mixed
+    public function getScalarValue($value): string
     {
         return (string)$value;
     }
 
-    public function getHumanReadableValue($fieldName, $value): mixed
+    public function getHumanReadableValue($fieldName, $value): string
     {
         return (string)$value;
     }
